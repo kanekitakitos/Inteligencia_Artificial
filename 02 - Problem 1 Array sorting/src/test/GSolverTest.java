@@ -341,4 +341,26 @@ public class GSolverTest {
         System.out.printf("Estimated memory used by solver: %.3f MB%n", (memoryAfter - memoryBefore) / (1024.0 * 1024.0));
         System.out.println("-------------------------");
     }
+
+    /**
+     * Tests Sample 3 from the assignment, which has multiple optimal paths.
+     * This test validates that the algorithm finds the optimal path that a strict UCS
+     * algorithm should find (by taking the cheapest initial step), which differs from the sample output's path.
+     * @throws Exception if the test run fails.
+     */
+    @Test
+    void testFromAssignmentSample3_StrictUCSRoute() throws Exception {
+        // Arrange
+        String input = "14 11 15 13 12\n15 14 13 12 11\n";
+        String expectedOutput = "14 11 15 13 12" + System.lineSeparator() +
+                                "12 11 15 13 14" + System.lineSeparator() +
+                                "15 11 12 13 14" + System.lineSeparator() +
+                                "15 14 12 13 11" + System.lineSeparator() +
+                                "15 14 13 12 11" + System.lineSeparator() +
+                                "35" + System.lineSeparator();
+        // Act
+        runAppWithInput(input);
+        // Assert
+        assertEquals(expectedOutput, outContent.toString());
+    }
 }
