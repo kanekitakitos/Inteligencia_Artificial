@@ -1,24 +1,11 @@
+
 package core;
 
 import java.util.*;
 
-/**
- * Deterministic uniform-cost search base class.
- *
- * Key change: replace a plain PriorityQueue with a TreeMap-based bucketed queue:
- *   TreeMap<Double, ArrayDeque<State>>
- *
- * This enforces:
- *  - processing by increasing g (cumulative cost),
- *  - FIFO within equal-g groups (insert at tail),
- *  - lazy removal of obsolete states (skip when polled if not the current best in abertosMap).
- *
- * This yields deterministic behavior required by the sample outputs.
- */
 public abstract class AbstractSearch {
-    // kept for compatibility; we use our own fringe internally in solve()
     protected Queue<State> abertos;
-    protected Map<Ilayout, State> fechados; // expanded states
+    protected Map<Ilayout, State> fechados; // Using this map to track the best state found for a layout
     protected State actual;
     protected Ilayout objective;
     private static long sequenceCounter = 0;
@@ -26,13 +13,14 @@ public abstract class AbstractSearch {
     public static class State {
         private final Ilayout layout;
         private final State father;
-        private final double g; // cost from start
-        private final long sequenceNumber;
+        private final double g; // Cost from start to current state
+        private final long sequenceId;
 
         public State(Ilayout l, State n) {
             layout = l;
             father = n;
-            sequenceNumber = AbstractSearch.sequenceCounter++;
+            sequenceId = AbstractSearch.sequenceCounter++;
+
             if (father != null) {
                 g = father.g + layout.getK();
             } else {
@@ -47,7 +35,7 @@ public abstract class AbstractSearch {
 
         public double getK() { return g; }
         public double getG() { return g; }
-        public long getSequenceNumber() { return sequenceNumber; }
+        public long getSequenceId() { return sequenceId; }
         public Ilayout getLayout() { return layout; }
         public State getFather() { return father; }
 
@@ -71,82 +59,59 @@ public abstract class AbstractSearch {
         return sucs;
     }
 
-    /**
-     * Note: createFringe is left abstract for compatibility, but the solve() method
-     * below uses an internal bucketed structure for determinism.
-     */
-    protected abstract Queue<State> createFringe();
-
-    // dentro do teu AbstractSearch (substitui o solve atual)
-    public final Iterator<State> solve(Ilayout s, Ilayout goal) {
+    public final Iterator<State> solve(Ilayout s, Ilayout goal)
+    {
         objective = goal;
+        abertos = createFringe();
         fechados = new HashMap<>();
-        Map<Ilayout, State> abertosMap = new HashMap<>();
+        sequenceCounter = 0;
 
-        // Bucketed fringe: key = cumulative g (long), value = FIFO deque of States
-        TreeMap<Long, ArrayDeque<State>> buckets = new TreeMap<>();
+        State initialState = new State(s, null);
+        abertos.add(initialState);
+        fechados.put(initialState.getLayout(), initialState);
 
-        sequenceCounter = 0L;
-        // initial
-        State initial = new State(s, null); // adapt State.g to be long internally if you change it
-        // ensure initial.g == 0
-        long g0 = Math.round(initial.getG());
-        buckets.computeIfAbsent(g0, k -> new ArrayDeque<>()).addLast(initial);
-        abertosMap.put(initial.getLayout(), initial);
+        while (!abertos.isEmpty()) {
+            actual = abertos.poll();
 
-        while (!buckets.isEmpty()) {
-            Map.Entry<Long, ArrayDeque<State>> entry = buckets.firstEntry();
-            ArrayDeque<State> dq = entry.getValue();
 
-            State polled = null;
-            // pop from head until we find a non-obsolete state
-            while (!dq.isEmpty()) {
-                State candidate = dq.peekFirst();
-                State currentBest = abertosMap.get(candidate.getLayout());
-                if (currentBest == candidate) {
-                    polled = dq.removeFirst();
-                    abertosMap.remove(polled.getLayout()); // will be expanded now
-                    break;
-                } else {
-                    // obsolete state, drop it
-                    dq.removeFirst();
-                }
+            State currentBest = fechados.get(actual.getLayout());
+            if (actual.getG() > currentBest.getG()) {
+                System.err.println("SKIPPING stale node=" + actual.getLayout() + " seq=" + actual.getSequenceId() + " totalG=" + actual.getG() + " (better path exists with G=" + currentBest.getG() + ")");
+                continue;
             }
-            // if this bucket is empty now, remove it
-            if (dq.isEmpty()) buckets.remove(entry.getKey());
 
-            if (polled == null) continue; // all entries were obsolete, move to next bucket
+            System.err.println("--------------------------------------------------------------------------------------------------------------------");
+            System.err.println("EXPANDING node=" + actual.getLayout() + " totalG=" + actual.getG() + " seq=" + actual.getSequenceId());
 
-            actual = polled;
-
-            // goal test
             if (actual.getLayout().isGoal(objective)) {
+                System.err.println("GOAL FOUND!");
                 LinkedList<State> path = new LinkedList<>();
-                State cur = actual;
-                while (cur != null) { path.addFirst(cur); cur = cur.getFather(); }
+                State current = actual;
+                while (current != null) {
+                    path.addFirst(current);
+                    current = current.getFather();
+                }
                 return path.iterator();
             }
 
-            // mark closed
-            fechados.put(actual.getLayout(), actual);
+            List<State> sucs = generateSuccessors(actual);
+            int childNum = 0;
+            for (State successor : sucs) {
+                State existing = fechados.get(successor.getLayout());
 
-            // expand successors
-            List<State> sucs = generateSuccessors(actual); // IMPORTANT: ensure this uses j descending
-            for (State succ : sucs) {
-                if (fechados.containsKey(succ.getLayout())) continue; // already expanded
 
-                long succG = Math.round(succ.getG()); // ensure succ.g computed as integer-like
-
-                State existing = abertosMap.get(succ.getLayout());
-                if (existing == null || succG < Math.round(existing.getG())) {
-                    // insert at tail of bucket succG
-                    buckets.computeIfAbsent(succG, k -> new ArrayDeque<>()).addLast(succ);
-                    abertosMap.put(succ.getLayout(), succ);
+                if (existing == null || successor.getG() < existing.getG()) {
+                    fechados.put(successor.getLayout(), successor);
+                    abertos.add(successor);
+                    System.err.println("  CHILD#" + childNum + " ADD child= " + successor.getLayout() + " step= " + successor.getLayout().getK() + " totalG= " + successor.getG() + " seq=" + successor.getSequenceId());
+                } else {
+                    System.err.println("  CHILD#" + childNum + " IGNORE = " + successor.getLayout() + " step= " + successor.getLayout().getK() + " totalG= " + successor.getG() + " seq=" + successor.getSequenceId() + " (worse than existing seq=" + existing.getSequenceId() + " existingG=" + existing.getG() + ")");
                 }
+                childNum++;
             }
         }
-
-        return null; // no solution
+        return null;
     }
 
+    protected abstract Queue<State> createFringe();
 }
