@@ -165,15 +165,32 @@ public final class ArrayCfg implements Ilayout {
     /**
      * Calculates the heuristic value (h) for the A* algorithm.
      * <p>
-     * This heuristic provides a more informed (and thus stronger) estimate than simply counting
-     * misplaced elements. It calculates the minimum potential cost to move each misplaced element
-     * individually and sums these costs, then divides by two (since each swap moves two elements).
+     * This is a highly accurate and admissible heuristic based on the mathematical concept of
+     * <b>permutation cycle decomposition</b>. It provides a very tight lower-bound estimate of
+     * the minimum cost to sort the array, making the A* search extremely efficient.
+     * The calculation involves these steps:
+     * </p>
+     * <ol>
+     *   <li><b>Mapping:</b> It first determines the target position for each element in the current
+     *       layout relative to the goal layout, correctly handling duplicate numbers.</li>
+     *   <li><b>Cycle Decomposition:</b> The permutation is broken down into disjoint cycles. For example,
+     *       if element `A` is in `B`'s spot, `B` in `C`'s spot, and `C` in `A`'s spot, they form a 3-cycle.</li>
+     *   <li><b>Cost Calculation for 2-Cycles:</b> For cycles of length 2 (a simple swap), the exact
+     *       cost of that one swap is calculated and added to the total heuristic value.</li>
+     *   <li><b>Cost Estimation for Larger Cycles:</b> A cycle of length `k > 2` requires `k-1` swaps to be resolved.
+     *       The elements from all such larger cycles are pooled together. A greedy algorithm then estimates
+     *       the minimum cost to perform the required number of swaps by always choosing the cheapest
+     *       pairing available (even-even, then mixed-parity, then odd-odd).</li>
+     * </ol>
+     * <p>
+     * This heuristic remains admissible because it calculates exact costs for 2-cycles and uses a
+     * best-case greedy strategy for all other required swaps, ensuring it never overestimates the true cost.
+     * </p>
      * <ul>
-     *     <li>For a misplaced <b>even</b> number, the cheapest move is swapping it with another even number (cost 2).</li>
-     *     <li>For a misplaced <b>odd</b> number, the cheapest move is swapping it with an even number (cost 11).</li>
+     *     <li><b>Time Complexity:</b> O(n), where n is the number of elements in the array. Each step
+     *     (mapping, cycle decomposition, greedy pairing) is linear.</li>
+     *     <li><b>Space Complexity:</b> O(n), due to the storage required for the position maps and visited arrays.</li>
      * </ul>
-     * This heuristic remains admissible because it is based on the lowest possible cost for each
-     * action, ensuring it never overestimates the true cost to the goal.
      *
      * @param goal The goal layout to compare against.
      * @return The estimated cost to reach the goal.
@@ -181,24 +198,92 @@ public final class ArrayCfg implements Ilayout {
     @Override
     public double getH(Ilayout goal) {
         if (!(goal instanceof ArrayCfg)) return Double.POSITIVE_INFINITY;
-
         ArrayCfg goalCfg = (ArrayCfg) goal;
-        double estimatedCost = 0;
 
-        for (int i = 0; i < data.length; i++) {
-            if (data[i] != goalCfg.data[i]) {
-                // This element is misplaced. Estimate the minimum cost to move it based on its parity.
-                if (data[i] % 2 == 0) { // If the element is even
-                    estimatedCost += 2; // Cheapest swap is with another even (cost 2)
-                } else { // If the element is odd
-                    estimatedCost += 11; // Cheapest swap is with an even (cost 11)
+        int n = data.length;
+        if (goalCfg.data.length != n) return Double.POSITIVE_INFINITY;
+
+        // 1) Map each value to a queue of goal positions (handles duplicates)
+        java.util.Map<Integer, java.util.ArrayDeque<Integer>> posMap = new java.util.HashMap<>();
+        for (int j = 0; j < n; j++) {
+            posMap.computeIfAbsent(goalCfg.data[j], k -> new java.util.ArrayDeque<>()).addLast(j);
+        }
+
+        // 2) Build targetIndex: where should element at i go in goal?
+        int[] targetIndex = new int[n];
+        for (int i = 0; i < n; i++) {
+            java.util.ArrayDeque<Integer> q = posMap.get(data[i]);
+            if (q == null || q.isEmpty()) {
+                // multisets differ -> unreachable / invalid goal mapping
+                return Double.POSITIVE_INFINITY;
+            }
+            targetIndex[i] = q.removeFirst();
+        }
+
+        // 3) Decompose permutation into cycles
+        boolean[] visited = new boolean[n];
+        int totalSwapsNeeded = 0;
+
+        // We'll accumulate parity counts for cycles of len > 2.
+        int evenRem = 0;
+        int oddRem = 0;
+        double heuristic = 0.0;
+
+        for (int i = 0; i < n; i++) {
+            if (visited[i] || targetIndex[i] == i) {
+                visited[i] = true;
+                continue;
+            }
+
+            // follow cycle starting at i
+            int cur = i;
+            java.util.ArrayList<Integer> cycleVals = new java.util.ArrayList<>();
+            while (!visited[cur]) {
+                visited[cur] = true;
+                cycleVals.add(data[cur]);
+                cur = targetIndex[cur];
+            }
+
+            int len = cycleVals.size();
+            if (len <= 1) continue;
+
+            if (len == 2) {
+                // For 2-cycles we know exactly one swap needed: use exact cost of swapping these two values.
+                int a = cycleVals.get(0);
+                int b = cycleVals.get(1);
+                heuristic += calculateCost(a, b);
+                // this 1 swap is already accounted for; do not add to remaining counts
+            } else {
+                // For cycles length > 2 we need len-1 swaps, but the exact cheapest combination is harder.
+                // We'll add (len - 1) to totalSwapsNeeded and collect their parities to be greedily paired later.
+                totalSwapsNeeded += (len - 1);
+                for (int v : cycleVals) {
+                    boolean ev = (v == 0) || ((v & 1) == 0);
+                    if (ev) evenRem++; else oddRem++;
                 }
             }
         }
 
-        // Each swap corrects two positions, so we divide the total estimated cost by 2.
-        // This ensures the heuristic remains admissible.
-        return estimatedCost / 2.0;
+        // 4) Greedy pairing to estimate minimal cost for the remaining swapsNeeded
+        // Each swap consumes two elements, choose cheapest available pair each time.
+        for (int s = 0; s < totalSwapsNeeded; s++) {
+            if (evenRem >= 2) {
+                heuristic += 2; // even-even
+                evenRem -= 2;
+            } else if (evenRem >= 1 && oddRem >= 1) {
+                heuristic += 11; // mixed
+                evenRem -= 1;
+                oddRem -= 1;
+            } else if (oddRem >= 2) {
+                heuristic += 20; // odd-odd
+                oddRem -= 2;
+            } else {
+                // If we run out of elements (shouldn't happen), be conservative and break.
+                break;
+            }
+        }
+
+        return heuristic;
     }
 
     /**

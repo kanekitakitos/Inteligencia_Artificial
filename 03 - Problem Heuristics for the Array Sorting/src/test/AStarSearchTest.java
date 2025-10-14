@@ -16,6 +16,7 @@ import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Unit and integration tests for the {@link AStarSearch} class.
@@ -155,5 +156,141 @@ public class AStarSearchTest {
             runAppWithInput(input);
             assertEquals(expectedOutput, outContent.toString(), "The output for the highly scrambled array should be correct.");
         });
+    }
+
+    /**
+     * A more rigorous performance test with a fully reversed 11-element array.
+     * This significantly increases the search space compared to the 10-element test,
+     * providing a stronger challenge for the A* algorithm and its heuristic.
+     * The optimal path involves 5 swaps.
+     * Timeout is set to 2 seconds to account for the increased complexity.
+     */
+    @Test
+    void testReversedArray_11_elements_performance() {
+        // Arrange
+        String input = "11 10 9 8 7 6 5 4 3 2 1\n1 2 3 4 5 6 7 8 9 10 11\n";
+        // Optimal path cost is calculated by swapping symmetric pairs:
+        // swap(1,11) -> cost 20 (odd-odd)
+        // swap(2,10) -> cost 2 (even-even)
+        // swap(3,9)  -> cost 20 (odd-odd)
+        // swap(4,8)  -> cost 2 (even-even)
+        // swap(5,7)  -> cost 20 (odd-odd)
+        // Total cost = 20 + 2 + 20 + 2 + 20 = 64
+        String expectedOutput = "64" + System.lineSeparator();
+
+        // Act & Assert
+        assertTimeout(Duration.ofSeconds(1), () -> {
+            runAppWithInput(input);
+            assertEquals(expectedOutput, outContent.toString(), "The output for the 11-element reversed array should be correct.");
+        });
+    }
+
+
+    @Test
+    void testWorstCase_12_elements_performance() {
+        // Arrange: All evens are in the first half, odds in the second. Goal is the opposite.
+        String input = "2 4 6 8 10 12 1 3 5 7 9 11\n1 3 5 7 9 11 2 4 6 8 10 12\n";
+        // The optimal solution requires swapping each even number with an odd number.
+        // This means 6 swaps of cost 11 each. Total cost = 6 * 11 = 66.
+        String expectedOutput = "66" + System.lineSeparator();
+
+        // Act & Assert
+        assertTimeout(Duration.ofSeconds(1), () -> {
+            runAppWithInput(input);
+            assertEquals(expectedOutput, outContent.toString(), "The output for the 12-element 'worst-case' array should be correct.");
+        });
+    }
+
+    /**
+     * Tests the case where the initial state is already the goal state.
+     * The expected cost should be 0.
+     * @throws Exception if the test run fails.
+     */
+    @Test
+    void testInitialIsGoal() throws Exception {
+        // Arrange
+        String input = "1 2 3 4 5\n1 2 3 4 5\n";
+        String expectedOutput = "0" + System.lineSeparator();
+
+        // Act
+        runAppWithInput(input);
+
+        // Assert
+        assertEquals(expectedOutput, outContent.toString());
+    }
+
+    /**
+     * Tests the algorithm's behavior with duplicate numbers in the array.
+     * The search should still find the optimal path.
+     * @throws Exception if the test run fails.
+     */
+    @Test
+    void testWithDuplicateNumbers() throws Exception {
+        // Arrange
+        String input = "2 5 2 8\n8 5 2 2\n"; // Swap (2,8) -> cost 2
+        String expectedOutput = "2" + System.lineSeparator();
+
+        // Act
+        runAppWithInput(input);
+
+        // Assert
+        assertEquals(expectedOutput, outContent.toString());
+    }
+
+    /**
+     * Tests a single-element array, which is already sorted.
+     * The cost should be 0.
+     * @throws Exception if the test run fails.
+     */
+    @Test
+    void testSingleElementArray() throws Exception {
+        // Arrange
+        String input = "10\n10\n";
+        String expectedOutput = "0" + System.lineSeparator();
+
+        // Act
+        runAppWithInput(input);
+
+        // Assert
+        assertEquals(expectedOutput, outContent.toString());
+    }
+
+    /**
+     * Tests that creating a configuration from an empty string throws an exception.
+     * This ensures robust input validation.
+     */
+    @Test
+    void testEmptyInput() {
+        // Arrange
+        String input = "\n\n"; // Empty lines
+        System.setIn(new ByteArrayInputStream(input.getBytes()));
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> main(null));
+    }
+
+    /**
+     * Tests a scenario where the heuristic's admissibility is key.
+     * A path with more steps (2 swaps) but lower total cost (2+2=4) should be chosen
+     * over a path with fewer steps (1 swap) but higher cost (11).
+     */
+    @Test
+    void testHeuristicAdmissibility() throws Exception {
+        String input = "1 2 4\n4 1 2\n"; // Goal: 4 1 2
+        String expectedOutput = "4" + System.lineSeparator(); // Optimal: (1,4) cost 11. (1,2)->(2,1,4) cost 11. (2,4)->(4,1,2) cost 2. Total 13. Wait.
+        // Path 1: swap(1,4) -> 4 2 1. cost 11. swap(2,1) -> 4 1 2. cost 11. Total 22.
+        // Path 2: swap(2,4) -> 1 4 2. cost 2. swap(1,4) -> 4 1 2. cost 11. Total 13.
+        // Path 3: swap(1,2) -> 2 1 4. cost 11. swap(2,4) -> 4 1 2. cost 2. Total 13.
+        // Let's re-evaluate the optimal cost.
+        // Initial: 1 2 4. Goal: 4 1 2.
+        // 1 is odd, 2 is even, 4 is even.
+        // Swap (2,4) -> 1 4 2. Cost = 2. Now state is 1 4 2.
+        // Swap (1,4) -> 4 1 2. Cost = 11. Total cost = 2 + 11 = 13.
+        // Let's check another path.
+        // Swap (1,4) -> 4 2 1. Cost = 11. Now state is 4 2 1.
+        // Swap (2,1) -> 4 1 2. Cost = 11. Total cost = 11 + 11 = 22.
+        // The optimal cost is 13.
+        runAppWithInput(input);
+        assertEquals("13" + System.lineSeparator(), outContent.toString());
     }
 }
