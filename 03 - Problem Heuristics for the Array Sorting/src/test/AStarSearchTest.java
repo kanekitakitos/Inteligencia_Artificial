@@ -5,16 +5,20 @@ import core.AStarSearch;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.Iterator;
 import java.util.Scanner;
 
@@ -514,4 +518,48 @@ public class AStarSearchTest {
         // Report time
         reportTime(startTime, endTime, "test16");
     }
+
+//    /**
+//     * A randomized test that runs multiple times, each time generating a new, random problem.
+//     * This acts as a "fuzz test" to ensure the algorithm is robust against a wide variety
+//     * of unforeseen inputs.
+//     * <p>
+//     * In each repetition, it will:
+//     * 1. Generate a random array size between 6 and 20.
+//     * 2. Create a shuffled initial array and a sorted goal array.
+//     * 3. Run the solver and report the time.
+//     * <p>
+//     * The test passes as long as the solver completes without throwing an exception.
+//     *
+//     * @throws Exception if the test run fails.
+//     */
+//    @RepeatedTest(value = 5, name = "Randomized Test {currentRepetition}/{totalRepetitions}")
+//    @DisplayName("Randomized Fuzz Test")
+//    void test17_randomized() throws Exception {
+//        // Arrange
+//        Random random = new Random();
+//        int size = random.nextInt(15) + 6; // Random size between 6 and 20
+//
+//        List<Integer> numbers = IntStream.rangeClosed(1, size).boxed().collect(Collectors.toList());
+//        String goalString = numbers.stream().map(String::valueOf).collect(Collectors.joining(" "));
+//
+//        Collections.shuffle(numbers, random);
+//        String initialString = numbers.stream().map(String::valueOf).collect(Collectors.joining(" "));
+//
+//        String input = initialString + "\n" + goalString + "\n";
+//
+//        System.err.printf("\n  [RANDOM-TEST] Running with size %d. Initial: [%s]%n", size, initialString);
+//
+//        // Act
+//        long startTime = System.nanoTime();
+//        runAppWithInput(input);
+//        long endTime = System.nanoTime();
+//
+//        // Assert
+//        // In a fuzz test, we don't know the expected output. The test's success is defined
+//        // by the algorithm completing without errors. The assertion is implicit.
+//
+//        // Report time
+//        reportTime(startTime, endTime, "test17_randomized(size=" + size + ")");
+//    }
 }

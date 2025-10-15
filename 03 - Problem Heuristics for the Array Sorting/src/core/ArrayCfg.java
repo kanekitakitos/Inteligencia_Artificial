@@ -320,7 +320,7 @@ private static final class Heuristic {
 
             if (k == 2) {
                 heuristic += calculateCost(cycleVals.get(0), cycleVals.get(1));
-            } else if (k <= 5) {
+            } else if (k <= 4) {
                 heuristic += costForSmallCycle(cycleVals, cycleGoalVals);
             } else {
                 int evenCount = 0, oddCount = 0;
