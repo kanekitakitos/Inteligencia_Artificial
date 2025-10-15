@@ -1,98 +1,102 @@
 # Array Sorting with Heuristic Search
 
-Este proyecto explora la resolución de un problema de ordenación de arrays utilizando algoritmos de búsqueda en espacios de estados. El objetivo es encontrar la secuencia de intercambios (swaps) de mínimo coste para transformar un array inicial en un array objetivo.
+Este projeto explora a resolução de um problema de ordenação de arrays utilizando algoritmos de busca em espaços de estados. O objetivo é encontrar a sequência de trocas (swaps) de custo mínimo para transformar um array inicial em um array objetivo.
 
-El coste de cada intercambio depende de la paridad de los números involucrados:
+O custo de cada troca depende da paridade dos números envolvidos:
 - **Par-Par**: Coste 2
 - **Impar-Impar**: Coste 20
 - **Par-Impar**: Coste 11
 
 ## Algoritmos Implementados
 
-El proyecto implementa y compara dos algoritmos de búsqueda fundamentales:
+O projeto implementa e compara dois algoritmos de busca fundamentais:
 
-1.  **`GSolver` (Búsqueda de Coste Uniforme - UCS):**
-    - Es un algoritmo de búsqueda **no informada**.
-    - Explora el espacio de estados expandiendo siempre el nodo con el menor coste acumulado (`g(n)`) desde el inicio.
-    - Garantiza encontrar la solución de coste óptimo, pero puede ser extremadamente lento en problemas complejos, ya que explora muchas rutas innecesarias al no tener "sentido de la dirección".
+1.  **`GSolver` (Busca de Custo Uniforme - UCS):**
+    - É um algoritmo de busca **não informada**.
+    - Explora o espaço de estados expandindo sempre o nó com o menor custo acumulado (`g(n)`) desde o início.
+    - Garante encontrar a solução de custo ótimo, mas pode ser extremamente lento em problemas complexos, já que explora muitas rotas desnecessárias por não ter um "senso de direção".
 
-2.  **`AStarSearch` (Búsqueda A*):**
-    - Es un algoritmo de búsqueda **informada**, mucho más eficiente.
+2.  **`AStarSearch` (Busca A*):**
+    - É um algoritmo de busca **informada**, muito mais eficiente.
     - Utiliza una función de evaluación `f(n) = g(n) + h(n)`, donde:
-        - `g(n)` es el coste real desde el estado inicial hasta el estado `n`.
-        - `h(n)` es una **heurística** que estima el coste mínimo desde `n` hasta el estado objetivo.
-    - La clave de su rendimiento reside en la calidad de la heurística `h(n)`.
+        - `g(n)` é o custo real desde o estado inicial até o estado `n`.
+        - `h(n)` é uma **heurística** que estima o custo mínimo desde `n` até o estado objetivo.
+    - A chave de seu desempenho reside na qualidade da heurística `h(n)`.
 
 ---
 
-## La Heurística de A*: El Corazón de la Eficiencia
+## A Heurística de A*: O Coração da Eficiência
 
-La superioridad del algoritmo A* en este proyecto se debe a una heurística (`h(n)`) muy sofisticada y precisa, implementada en la clase interna `ArrayCfg.Heuristic`. Esta heurística proporciona una estimación muy ajustada del coste real restante, permitiendo al algoritmo podar ramas enteras del árbol de búsqueda y encontrar la solución óptima de forma increíblemente rápida.
+A superioridade do algoritmo A* neste projeto se deve a uma heurística (`h(n)`) muito sofisticada e precisa, implementada na classe interna `ArrayCfg.Heuristic`. Esta heurística proporciona uma estimativa muito ajustada do custo real restante, permitindo ao algoritmo podar galhos inteiros da árvore de busca e encontrar a solução ótima de forma incrivelmente rápida.
 
-La lógica se basa en el concepto matemático de la **descomposición de permutaciones en ciclos disjuntos**.
+A lógica se baseia no conceito matemático da **decomposição de permutações em ciclos disjuntos**.
 
-### 1. ¿Qué es la Descomposición en Ciclos?
+### 1. O que é a Descomposição em Ciclos?
 
-El problema de ordenar el array se puede ver como transformar una permutación de números en otra. Cualquier permutación se puede descomponer en un conjunto de "ciclos" independientes.
+O problema de ordenar o array pode ser visto como transformar uma permutação de números em outra. Qualquer permutação pode ser decomposta em um conjunto de "ciclos" independentes.
 
 **Ejemplo:**
-- Array Actual: `[B, C, A]`
-- Array Objetivo: `[A, B, C]`
+- Array Atual: `[2, 3, 1]`
+- Array Objetivo: `[1, 2, 3]`
 
-Aquí, el elemento `B` está en la posición de `A`, `C` está en la posición de `B`, y `A` está en la posición de `C`. Esto forma un único **3-ciclo**: `A -> B -> C -> A`.
+Aqui, o elemento `2` está na posição de `1`, `3` está na posição de `2`, e `1` está na posição de `3`. Isto forma um único **3-ciclo**: `1 -> 2 -> 3 -> 1`.
 
-La idea fundamental es que **los ciclos son subproblemas independientes**. El coste total para ordenar el array es la suma de los costes para resolver cada ciclo por separado. Un ciclo de longitud `k` siempre requiere un mínimo de `k-1` intercambios para ser resuelto.
+A ideia fundamental é que **os ciclos são subproblemas independentes**. O custo total para ordenar o array é a soma dos custos para resolver cada ciclo separadamente. Um ciclo de comprimento `k` sempre requer um mínimo de `k-1` trocas para ser resolvido.
 
-### 2. Estrategia Híbrida para Calcular el Coste de los Ciclos
+### 2. Estratégia Híbrida para Calcular o Custo dos Ciclos
 
-La heurística no se conforma con una estimación simple. Utiliza una **estrategia híbrida** para calcular el coste de cada ciclo con la máxima precisión posible, dependiendo de su tamaño:
+A heurística não se conforma com uma estimativa simples. Utiliza uma **estratégia híbrida** para calcular o custo de cada ciclo com a máxima precisão possível, dependendo de seu tamanho:
 
-#### a) 2-Ciclos (Intercambios Simples)
-- **Lógica:** Un ciclo de longitud 2 (ej: `A` en la posición de `B` y `B` en la de `A`) se resuelve con un único intercambio.
-- **Cálculo:** La heurística calcula el **coste exacto** de ese único intercambio (`calculateCost(A, B)`). Es la estimación más precisa posible.
+#### a) 2-Ciclos (Trocas Simples)
+- **Lógica:** Um ciclo de comprimento 2 (ex: `A` na posição de `B` e `B` na de `A`) se resolve com uma única troca.
+- **Cálculo:** A heurística calcula o **custo exato** dessa única troca (`calculateCost(A, B)`). É a estimativa mais precisa possível.
 
-#### b) Ciclos Pequeños (3 a 5 elementos)
-- **Lógica:** Para ciclos de tamaño `k` entre 3 y 5, la heurística realiza una **búsqueda por fuerza bruta** para encontrar el **coste óptimo real** para resolver ese ciclo.
-- **Cálculo:** Explora todas las secuencias válidas de `k-1` intercambios entre los elementos del ciclo y se queda con la de menor coste. Aunque es computacionalmente intensivo, para un `k` tan pequeño el coste es trivial, pero la ganancia en precisión para la heurística es enorme.
+#### b) Ciclos Pequenos (3 e 4 elementos)
+- **Lógica:** Para ciclos de tamanho `k` de 3 ou 4, a heurística realiza uma **busca por força bruta** para encontrar o **custo ótimo real** para resolver esse subproblema.
+- **Cálculo:** Explora todas as sequências válidas de `k-1` trocas entre os elementos do ciclo e seleciona a de menor custo. Embora seja computacionalmente intensivo, para um `k` tão pequeno o custo é trivial, mas o ganho em precisão para a heurística é enorme.
 
-#### c) Ciclos Grandes (> 5 elementos)
-- **Lógica:** Para ciclos más grandes, la fuerza bruta sería demasiado lenta (explosión combinatoria). En su lugar, se utiliza un **algoritmo voraz (greedy)** rápido y admisible.
-- **Cálculo:** Se agrupan todos los elementos de los ciclos grandes y se estima el coste total simulando repetidamente el tipo de intercambio más barato posible con los elementos disponibles (primero todos los par-par, luego los par-impar, y finalmente los impar-impar). Esto garantiza una estimación conservadora que nunca sobreestima el coste real.
+#### c) Ciclos Grandes (> 4 elementos)
+- **Lógica:** Para ciclos maiores, a força bruta seria muito lenta. Em seu lugar, utiliza-se um **algoritmo guloso (greedy)** rápido e admissível, que varia segundo a composição do ciclo.
+- **Cálculo:**
+    - **Se o ciclo contém números pares:** A estratégia mais barata é usar um número par como "pivô". O custo é a soma de `(número de pares - 1)` trocas par-par (custo 2) e `(número de ímpares)` trocas par-ímpar (custo 11).
+    - **Se o ciclo contém apenas números ímpares:** Duas opções são consideradas:
+        1. Resolver o ciclo internamente com `k-1` trocas ímpar-ímpar (custo 20 cada).
+        2. "Pegar emprestado" um número par de fora do ciclo, realizar `k` trocas par-ímpar (custo 11 cada) e depois devolver o número par. A heurística usa o **mínimo** entre `(k-1)*20` e `k*11`. Se não houver números pares no array, apenas a primeira opção é possível.
 
-### 3. Admisibilidad: La Garantía de Optimalidad
+### 3. Admissibilidade: A Garantia de Otimalidade
 
-La heurística es **admisible**, lo que significa que **nunca sobreestima el coste real** para llegar al objetivo. Esto es crucial, ya que es la condición que garantiza que A* encontrará la solución óptima.
+A heurística é **admissível**, o que significa que **nunca superestima o custo real** para chegar ao objetivo. Isto é crucial, já que é a condição que garante que A* encontrará a solução ótima.
 
-La admisibilidad se mantiene porque:
-- Para 2-ciclos, usa el coste **exacto**.
-- Para ciclos pequeños, encuentra el coste **óptimo**.
-- Para ciclos grandes, usa una estimación voraz que representa el **mejor caso posible**.
+A admissibilidade se mantém porque:
+- Para 2-ciclos, usa o custo **exato**.
+- Para ciclos pequenos, encontra o custo **ótimo**.
+- Para ciclos grandes, usa uma estimativa gulosa que representa o **melhor caso possível** (lower-bound).
 
-Gracias a esta combinación de precisión y eficiencia, el algoritmo A* es capaz de resolver problemas muy complejos en milisegundos, mientras que un algoritmo no informado como `GSolver` tardaría minutos, horas o incluso más.
+Graças a esta combinação de precisão e eficiência, o algoritmo A* é capaz de resolver problemas muito complexos em milissegundos, enquanto um algoritmo não informado como `GSolver` levaria minutos, horas ou até mais.
 
-## Cómo Ejecutar el Proyecto
+## Como Executar o Projeto
 
-1.  **Clase Principal:** El punto de entrada es `Main.java`.
-2.  **Entrada:** El programa espera dos líneas desde la entrada estándar:
-    - La primera línea es el array inicial (números separados por espacios).
-    - La segunda línea es el array objetivo.
+1.  **Classe Principal:** O ponto de entrada é `Main.java`. Por padrão, ele executa a busca A*.
+2.  **Entrada:** O programa espera duas linhas da entrada padrão:
+    - A primeira linha é o array inicial (números separados por espaços).
+    - A segunda linha é o array objetivo.
 
     **Ejemplo de entrada:**
     ```
     2 4 6 8 10 12 1 3 5 7 9 11
     1 3 5 7 9 11 2 4 6 8 10 12
     ```
-4.  **Salida:** El programa imprimirá un único número: el coste total mínimo de la solución.
+3.  **Saída:** O programa imprimirá um único número: o custo total mínimo da solução.
 
-## Estructura del Proyecto
+## Estrutura do Projeto
 
-- **`src/core`**: Contiene las clases principales del motor de búsqueda.
-  - `AbstractSearch.java`: Clase base abstracta para los algoritmos de búsqueda.
-  - `AStarSearch.java`: Implementación de A*.
-  - `GSolver.java`: Implementación de Búsqueda de Coste Uniforme.
-  - `ArrayCfg.java`: Representación del estado del problema y la lógica de la heurística.
-  - `Ilayout.java`: Interfaz que define la estructura de un estado.
-- **`src/test`**: Contiene las pruebas unitarias y de rendimiento.
-  - `AStarSearchTest.java`: Pruebas para el algoritmo A*.
-  - `GSolverTest.java`: Pruebas para el algoritmo `GSolver`.
-  - `ComparisonTest.java`: Pruebas de benchmark que comparan la velocidad de ambos algoritmos en casos complejos.
+- **`src/core`**: Contém as classes principais do motor de busca.
+  - `AbstractSearch.java`: Classe base abstrata para os algoritmos de busca.
+  - `AStarSearch.java`: Implementação do A*.
+  - `GSolver.java`: Implementação da Busca de Custo Uniforme.
+  - `ArrayCfg.java`: Representação do estado do problema e a lógica da heurística.
+  - `Ilayout.java`: Interface que define a estrutura de um estado.
+- **`src/test`**: Contém os testes unitários e de desempenho.
+  - `AStarSearchTest.java`: Testes para o algoritmo A*.
+  - `GSolverTest.java`: Testes para o algoritmo `GSolver`.
+  - `ComparisonTest.java`: Testes de benchmark que comparam a velocidade de ambos os algoritmos em casos complexos.
