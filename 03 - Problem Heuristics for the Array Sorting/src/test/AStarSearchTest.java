@@ -2,6 +2,7 @@ package test;
 
 import core.ArrayCfg;
 import core.AStarSearch;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,6 +13,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Iterator;
 import java.util.Scanner;
 
@@ -35,6 +38,9 @@ public class AStarSearchTest {
 
     // To provide System.in
     private final InputStream originalIn = System.in;
+
+    // To store execution times for average calculation
+    private static final List<Long> executionTimes = new ArrayList<>();
 
     /**
      * A private replica of the main application logic for testing purposes.
@@ -337,11 +343,31 @@ public class AStarSearchTest {
      * @param testName The name of the test being reported.
      */
     private void reportTime(long startTime, long endTime, String testName) {
-        double durationMs = (endTime - startTime) / 1_000_000.0;
+        long durationNanos = endTime - startTime;
+        executionTimes.add(durationNanos);
+
+        double durationMs = durationNanos / 1_000_000.0;
         double durationS = durationMs / 1000.0;
         System.err.printf("  [PERF] %s execution time: %.3f s (%.3f ms)%n", testName, durationS, durationMs);
     }
 
+    /**
+     * After all tests are executed, this method calculates and prints the average execution time.
+     */
+    @AfterAll
+    static void printAverageTime() {
+        if (executionTimes.isEmpty()) {
+            return;
+        }
+
+        double averageNanos = executionTimes.stream().mapToLong(Long::longValue).average().orElse(0.0);
+        double averageMs = averageNanos / 1_000_000.0;
+        double averageS = averageMs / 1000.0;
+
+        System.err.println("\n---------------------------------------------------");
+        System.err.printf("  [AVG PERF] Average execution time for %d tests: %.3f s (%.3f ms)%n", executionTimes.size(), averageS, averageMs);
+        System.err.println("---------------------------------------------------");
+    }
 
 
     /**
@@ -441,5 +467,51 @@ public class AStarSearchTest {
 
         // Report time
         reportTime(startTime, endTime, "test14");
+    }
+
+    /**
+     * Tests a new sample case with 7 elements.
+     * @throws Exception if the test run fails.
+     */
+    @Test
+    @DisplayName("New Sample 2 (7 elements)")
+    void test15() throws Exception {
+        // Arrange
+        String input = "2 5 7 6 1 3 4\n1 2 3 4 5 6 7\n";
+        String expectedOutput = "46" + System.lineSeparator();
+
+        // Act
+        long startTime = System.nanoTime();
+        runAppWithInput(input);
+        long endTime = System.nanoTime();
+
+        // Assert
+        assertEquals(expectedOutput, outContent.toString());
+
+        // Report time
+        reportTime(startTime, endTime, "test15");
+    }
+
+    /**
+     * Tests a new sample case with 8 elements.
+     * @throws Exception if the test run fails.
+     */
+    @Test
+    @DisplayName("New Sample 3 (8 elements)")
+    void test16() throws Exception {
+        // Arrange
+        String input = "2 5 7 8 6 1 3 4\n1 2 3 4 5 6 7 8\n";
+        String expectedOutput = "46" + System.lineSeparator();
+
+        // Act
+        long startTime = System.nanoTime();
+        runAppWithInput(input);
+        long endTime = System.nanoTime();
+
+        // Assert
+        assertEquals(expectedOutput, outContent.toString());
+
+        // Report time
+        reportTime(startTime, endTime, "test16");
     }
 }

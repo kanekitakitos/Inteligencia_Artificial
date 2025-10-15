@@ -34,7 +34,8 @@ public class Main {
         if (it==null) System.out.println("no solution found");
         else {
 
-            while(it.hasNext()) {
+            while(it.hasNext())
+            {
                 AStarSearch.State i = it.next();
                 //System.out.println(i); // Imprime o estado atual (o layout)
 
