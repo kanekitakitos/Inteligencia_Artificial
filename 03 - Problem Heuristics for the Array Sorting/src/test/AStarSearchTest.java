@@ -9,6 +9,7 @@ import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -24,6 +25,7 @@ import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 /**
  * Unit and integration tests for the {@link AStarSearch} class.
@@ -562,4 +564,27 @@ public class AStarSearchTest {
 //        // Report time
 //        reportTime(startTime, endTime, "test17_randomized(size=" + size + ")");
 //    }
+
+    /**
+     * Tests a specific case with 9 elements including zero.
+     * @throws Exception if the test run fails.
+     */
+    @Test
+    @DisplayName("New Sample 4 (9 elements with zero)")
+    void test18() throws Exception {
+        // Arrange
+        String input = "2 5 7 8 6 1 3 4 0\n0 1 2 3 4 5 6 7 8\n";
+        String expectedOutput = "50" + System.lineSeparator();
+        
+        // Act & Assert
+        long startTime = System.nanoTime();
+        assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
+            runAppWithInput(input);
+            assertEquals(expectedOutput, outContent.toString());
+        }, "Test should complete in under 1 second.");
+        long endTime = System.nanoTime();
+
+        // Report time
+        reportTime(startTime, endTime, "test18");
+    }
 }
