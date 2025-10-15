@@ -87,7 +87,8 @@ public class AStarSearchTest {
      * @throws Exception if the test run fails.
      */
     @Test
-    void testSample1_fromProblemDescription() throws Exception {
+    @DisplayName("Sample 1 from problem description")
+    void test01() throws Exception {
         // Arrange
         String input = "-2 4 0 -1 3 5 1\n-2 -1 0 1 3 4 5\n";
         String expectedOutput = "33" + System.lineSeparator();
@@ -107,7 +108,7 @@ public class AStarSearchTest {
      */
     @Test
     @DisplayName("Performance: Sample 1 from problem description")
-    void testSample1_performance() throws Exception {
+    void test02() throws Exception {
         // Arrange
         String input = "-2 4 0 -1 3 5 1\n-2 -1 0 1 3 4 5\n";
         String expectedOutput = "33" + System.lineSeparator();
@@ -121,7 +122,7 @@ public class AStarSearchTest {
         assertEquals(expectedOutput, outContent.toString(), "The output should be correct even when testing for performance.");
 
         // Report time
-        reportTime(startTime, endTime, "testSample1_performance");
+        reportTime(startTime, endTime, "test02");
     }
 
     /**
@@ -131,7 +132,7 @@ public class AStarSearchTest {
      */
     @Test
     @DisplayName("Performance: 8-element reversed array")
-    void testReversedArray_performance() throws Exception {
+    void test03() throws Exception {
         // Arrange
         String input = "8 7 6 5 4 3 2 1\n1 2 3 4 5 6 7 8\n";
         String expectedOutput = "44" + System.lineSeparator();
@@ -145,7 +146,7 @@ public class AStarSearchTest {
         assertEquals(expectedOutput, outContent.toString(), "The output for the reversed array should be correct.");
 
         // Report time
-        reportTime(startTime, endTime, "testReversedArray_performance");
+        reportTime(startTime, endTime, "test03");
     }
 
     /**
@@ -156,7 +157,7 @@ public class AStarSearchTest {
      */
     @Test
     @DisplayName("Performance: 10-element highly scrambled array")
-    void testHighlyScrambled_10_elements_performance() throws Exception {
+    void test04() throws Exception {
         // Arrange: Evens are in odd positions and vice-versa.
         String input = "9 8 7 6 5 4 3 2 1 10\n1 2 3 4 5 6 7 8 9 10\n";
         // The optimal solution requires 4 swaps, all between even and odd numbers.
@@ -173,7 +174,7 @@ public class AStarSearchTest {
         assertEquals(expectedOutput, outContent.toString(), "The output for the highly scrambled array should be correct.");
 
         // Report time
-        reportTime(startTime, endTime, "testHighlyScrambled_10_elements_performance");
+        reportTime(startTime, endTime, "test04");
     }
 
     /**
@@ -185,7 +186,7 @@ public class AStarSearchTest {
      */
     @Test
     @DisplayName("Performance: 11-element reversed array")
-    void testReversedArray_11_elements_performance() throws Exception {
+    void test05() throws Exception {
         // Arrange
         String input = "11 10 9 8 7 6 5 4 3 2 1\n1 2 3 4 5 6 7 8 9 10 11\n";
         // Optimal path cost is calculated by swapping symmetric pairs:
@@ -206,13 +207,13 @@ public class AStarSearchTest {
         assertEquals(expectedOutput, outContent.toString(), "The output for the 11-element reversed array should be correct.");
 
         // Report time
-        reportTime(startTime, endTime, "testReversedArray_11_elements_performance");
+        reportTime(startTime, endTime, "test05");
     }
 
 
     @Test
     @DisplayName("Performance: 12-element 'worst-case' array")
-    void testWorstCase_12_elements_performance() throws Exception {
+    void test06() throws Exception {
         // Arrange: All evens are in the first half, odds in the second. Goal is the opposite.
         String input = "2 4 6 8 10 12 1 3 5 7 9 11\n1 3 5 7 9 11 2 4 6 8 10 12\n";
         // The optimal solution requires swapping each even number with an odd number.
@@ -228,7 +229,7 @@ public class AStarSearchTest {
         assertEquals(expectedOutput, outContent.toString(), "The output for the 12-element 'worst-case' array should be correct.");
 
         // Report time
-        reportTime(startTime, endTime, "testWorstCase_12_elements_performance");
+        reportTime(startTime, endTime, "test06");
     }
 
     /**
@@ -237,7 +238,8 @@ public class AStarSearchTest {
      * @throws Exception if the test run fails.
      */
     @Test
-    void testInitialIsGoal() throws Exception {
+    @DisplayName("Initial state is goal state")
+    void test07() throws Exception {
         // Arrange
         String input = "1 2 3 4 5\n1 2 3 4 5\n";
         String expectedOutput = "0" + System.lineSeparator();
@@ -255,7 +257,8 @@ public class AStarSearchTest {
      * @throws Exception if the test run fails.
      */
     @Test
-    void testWithDuplicateNumbers() throws Exception {
+    @DisplayName("Array with duplicate numbers")
+    void test08() throws Exception {
         // Arrange
         String input = "2 5 2 8\n8 5 2 2\n"; // Swap (2,8) -> cost 2
         String expectedOutput = "2" + System.lineSeparator();
@@ -273,7 +276,8 @@ public class AStarSearchTest {
      * @throws Exception if the test run fails.
      */
     @Test
-    void testSingleElementArray() throws Exception {
+    @DisplayName("Single-element array")
+    void test09() throws Exception {
         // Arrange
         String input = "10\n10\n";
         String expectedOutput = "0" + System.lineSeparator();
@@ -290,7 +294,8 @@ public class AStarSearchTest {
      * This ensures robust input validation.
      */
     @Test
-    void testEmptyInput() {
+    @DisplayName("Empty input validation")
+    void test10() {
         // Arrange
         String input = "\n\n"; // Empty lines
         System.setIn(new ByteArrayInputStream(input.getBytes()));
@@ -305,7 +310,8 @@ public class AStarSearchTest {
      * over a path with fewer steps (1 swap) but higher cost (11).
      */
     @Test
-    void testHeuristicAdmissibility() throws Exception {
+    @DisplayName("Heuristic admissibility check")
+    void test11() throws Exception {
         String input = "1 2 4\n4 1 2\n"; // Goal: 4 1 2
         String expectedOutput = "4" + System.lineSeparator(); // Optimal: (1,4) cost 11. (1,2)->(2,1,4) cost 11. (2,4)->(4,1,2) cost 2. Total 13. Wait.
         // Path 1: swap(1,4) -> 4 2 1. cost 11. swap(2,1) -> 4 1 2. cost 11. Total 22.
@@ -379,8 +385,8 @@ public class AStarSearchTest {
      */
 
     @Test
-    @DisplayName("Heuristic Part: 2-Cycles Only")
-    void testHeuristic_2_Cycles_Only() throws Exception {
+    @DisplayName("Heuristic Part 1: 2-Cycles Only")
+    void test12() throws Exception {
         // Arrange
         String input = "2 1 4 3 6 5\n1 2 3 4 5 6\n";
         String expectedOutput = "33" + System.lineSeparator();
@@ -394,13 +400,13 @@ public class AStarSearchTest {
         assertEquals(expectedOutput, outContent.toString());
 
         // Report time
-        reportTime(startTime, endTime, "testHeuristic_2_Cycles_Only");
+        reportTime(startTime, endTime, "test12");
     }
 
 
     @Test
-    @DisplayName("Heuristic Part: Small Cycle (k=4) Brute-Force")
-    void testHeuristic_SmallCycle_BruteForce() throws Exception {
+    @DisplayName("Heuristic Part 2: Small Cycle (k=4) Brute-Force")
+    void test13() throws Exception {
         // Arrange
         String input = "2 3 4 1\n1 2 3 4\n";
         String expectedOutput = "24" + System.lineSeparator();
@@ -414,13 +420,13 @@ public class AStarSearchTest {
         assertEquals(expectedOutput, outContent.toString());
 
         // Report time
-        reportTime(startTime, endTime, "testHeuristic_SmallCycle_BruteForce");
+        reportTime(startTime, endTime, "test13");
     }
 
 
     @Test
-    @DisplayName("Heuristic Part: Large Cycle (k=6) Greedy Fallback")
-    void testHeuristic_LargeCycle_Greedy() throws Exception {
+    @DisplayName("Heuristic Part 3: Large Cycle (k=6) Greedy Fallback")
+    void test14() throws Exception {
         // Arrange
         String input = "2 3 4 5 6 1\n1 2 3 4 5 6\n";
         String expectedOutput = "37" + System.lineSeparator();
@@ -434,6 +440,6 @@ public class AStarSearchTest {
         assertEquals(expectedOutput, outContent.toString());
 
         // Report time
-        reportTime(startTime, endTime, "testHeuristic_LargeCycle_Greedy");
+        reportTime(startTime, endTime, "test14");
     }
 }
