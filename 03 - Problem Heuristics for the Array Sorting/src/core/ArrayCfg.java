@@ -238,8 +238,6 @@ public final class ArrayCfg implements Ilayout {
  * <b>permutation cycle decomposition</b>. This provides a very tight lower-bound estimate of the
  * true cost, making the A* search extremely efficient.
  * @author Brandon Mejia
-     *
-     *
  * @see #compute()
  */
 private static final class Heuristic {
@@ -261,9 +259,9 @@ private static final class Heuristic {
      * <li><b>Cycle Decomposition:</b> The permutation is broken down into disjoint cycles.</li>
      * <li><b>Hybrid Cost Calculation:</b> The cost for resolving each cycle is estimated based on its size:
      * <ul>
-     * <li><b>2-Cycles:</b> The exact cost of the single swap is calculated.</li>
-     * <li><b>Small Cycles (3-5 elements):</b> A brute-force search finds the true optimal cost.</li>
-     * <li><b>Large Cycles (>5 elements):</b> A fast, admissible greedy estimation is used.</li>
+     * <li><b>2-Cycles:</b> The exact cost of the single swap is calculated. This is optimal.</li>
+     * <li><b>Small Cycles (3-4 elements):</b> A brute-force search finds the true optimal cost for the subproblem.</li>
+     * <li><b>Large Cycles (>4 elements):</b> A more sophisticated analysis is used. If the cycle contains an even number, it's used as a pivot. If the cycle is all-odd, the heuristic calculates the minimum cost between internal swaps and "borrowing" an external even number.</li>
      * </ul>
      * </li>
      * </ol>
@@ -276,72 +274,85 @@ private static final class Heuristic {
      * </ul>
      */
     double compute() {
-        int n = data.length;
+    int n = data.length;
 
-        // 1) build posMap (goal value -> queue of positions)
-        Map<Integer, ArrayDeque<Integer>> posMap = new HashMap<>(n * 2);
-        for (int j = 0; j < n; j++) posMap.computeIfAbsent(goal[j], k -> new ArrayDeque<>()).addLast(j);
-
-        // 2) build targetIndex (if multisets differ, return +inf)
-        int[] targetIndex = new int[n];
-        for (int i = 0; i < n; i++) {
-            ArrayDeque<Integer> q = posMap.get(data[i]);
-            if (q == null || q.isEmpty()) return Double.POSITIVE_INFINITY;
-            targetIndex[i] = q.removeFirst();
+    // Pre-check for any even number in the entire permutation
+    boolean anyEvenNumberExists = false;
+    for (int val : data) {
+        if ((val & 1) == 0) {
+            anyEvenNumberExists = true;
+            break;
         }
-
-        // 3) process cycles
-        boolean[] visited = new boolean[n];
-        double heuristic = 0.0;
-
-        int totalSwapsNeededFallback = 0;
-        int evenRemFallback = 0;
-        int oddRemFallback = 0;
-
-        for (int i = 0; i < n; i++) {
-            if (visited[i] || targetIndex[i] == i) {
-                visited[i] = true;
-                continue;
-            }
-
-            int cur = i;
-            ArrayList<Integer> cycleVals = new ArrayList<>();
-            ArrayList<Integer> cycleGoalVals = new ArrayList<>();
-
-            while (!visited[cur]) {
-                visited[cur] = true;
-                cycleVals.add(data[cur]);
-                cycleGoalVals.add(goal[cur]);
-                cur = targetIndex[cur];
-            }
-
-            int k = cycleVals.size();
-            if (k <= 1) continue;
-
-            if (k == 2) {
-                heuristic += calculateCost(cycleVals.get(0), cycleVals.get(1));
-            } else if (k <= 4) {
-                heuristic += costForSmallCycle(cycleVals, cycleGoalVals);
-            } else {
-                int evenCount = 0, oddCount = 0;
-                for (int v : cycleVals) {
-                    boolean ev = (v == 0) || ((v & 1) == 0);
-                    if (ev) evenCount++; else oddCount++;
-                }
-                totalSwapsNeededFallback += (k - 1);
-                evenRemFallback += evenCount;
-                oddRemFallback += oddCount;
-            }
-        }
-
-        // 4) apply greedy fallback for aggregated large cycles
-        heuristic += greedyCostForFallback(totalSwapsNeededFallback, evenRemFallback, oddRemFallback);
-        return heuristic;
     }
 
+    // 1) Build a map of goal values to their positions.
+    Map<Integer, ArrayDeque<Integer>> posMap = new HashMap<>(n * 2);
+    for (int j = 0; j < n; j++) posMap.computeIfAbsent(goal[j], k -> new ArrayDeque<>()).addLast(j);
+
+    // 2) For each element in the current state, find its target index in the goal state.
+    int[] targetIndex = new int[n];
+    for (int i = 0; i < n; i++) {
+        ArrayDeque<Integer> q = posMap.get(data[i]);
+        if (q == null || q.isEmpty()) return Double.POSITIVE_INFINITY;
+        targetIndex[i] = q.removeFirst();
+    }
+
+    // 3) Decompose the permutation into cycles and sum their heuristic costs.
+    boolean[] visited = new boolean[n];
+    double heuristic = 0.0;
+
+    for (int i = 0; i < n; i++) {
+        if (visited[i] || targetIndex[i] == i) {
+            visited[i] = true;
+            continue;
+        }
+
+        int cur = i;
+        ArrayList<Integer> cycleVals = new ArrayList<>();
+        ArrayList<Integer> cycleGoalVals = new ArrayList<>();
+
+        while (!visited[cur]) {
+            visited[cur] = true;
+            cycleVals.add(data[cur]);
+            cycleGoalVals.add(goal[cur]);
+            cur = targetIndex[cur];
+        }
+
+        int k = cycleVals.size();
+        if (k <= 1) continue;
+
+        if (k == 2) {
+            heuristic += calculateCost(cycleVals.get(0), cycleVals.get(1));
+        } else if (k <= 4) {
+            heuristic += costForSmallCycle(cycleVals, cycleGoalVals);
+        } else { // This is the new logic for k > 4
+            int evenCount = 0;
+            for (int v : cycleVals) {
+                if ((v & 1) == 0) evenCount++;
+            }
+            int oddCount = k - evenCount;
+
+            if (evenCount > 0) {
+                // Strategy: Use one of the cycle's even numbers as a pivot.
+                heuristic += (long)(evenCount - 1) * 2 + (long)oddCount * 11;
+            } else { // All-odd cycle
+                if (anyEvenNumberExists) {
+                    // Strategy: Compare internal swaps vs. "borrowing" an external even number.
+                    heuristic += Math.min((long)(k - 1) * 20, (long)k * 11);
+                } else {
+                    // No evens anywhere, must use odd-odd swaps
+                    heuristic += (long)(k - 1) * 20;
+                }
+            }
+        }
+    }
+
+    return heuristic;
+}
     /**
-     *
      * Finds the minimal cost to resolve a small cycle by brute-forcing all valid swap sequences.
+     * A sequence is valid if it consists of exactly (k-1) swaps and sorts the cycle.
+     * Assumes k is in [3..4]. Uses pruning to discard non-optimal paths early.
      */
     private static double costForSmallCycle(List<Integer> cycleVals, List<Integer> cycleGoalVals) {
         final int k = cycleVals.size();
@@ -411,34 +422,13 @@ private static final class Heuristic {
         }
 
         if (bestCost == Double.POSITIVE_INFINITY) {
-            // Fallback for the rare case no solution is found (shouldn't happen)
-            return greedyCostForFallback(k - 1,
-                    (int) cycleVals.stream().filter(v -> (v & 1) == 0).count(),
-                    (int) cycleVals.stream().filter(v -> (v & 1) != 0).count());
+            // This fallback should theoretically never be reached if the logic is correct,
+            // as a solution with k-1 swaps must exist. It's a safeguard.
+            throw new IllegalStateException("Brute-force for small cycle failed to find a solution.");
         }
 
         return bestCost;
     }
-
-    /**
-     * Estimates the cost for large cycles using a greedy approach.
-     */
-    private static double greedyCostForFallback(int swapsNeeded, int evenCount, int oddCount) {
-        double cost = 0.0;
-        for (int s = 0; s < swapsNeeded; s++) {
-            if (evenCount >= 2) {
-                cost += 2; evenCount -= 2;
-            } else if (evenCount >= 1 && oddCount >= 1) {
-                cost += 11; evenCount -= 1; oddCount -= 1;
-            } else if (oddCount >= 2) {
-                cost += 20; oddCount -= 2;
-            } else {
-                break;
-            }
-        }
-        return cost;
-    }
-
 }
 
 }
