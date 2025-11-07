@@ -1,4 +1,4 @@
-import java.util.function.Function;
+import java.util.Random;
 
 /**
  * Represents a single artificial neuron, the fundamental processing unit of a neural network.
@@ -15,20 +15,24 @@ import java.util.function.Function;
  * @version 2025-11-06
  */
 public class Neuron {
-    private final double[] weights;
-    private final double bias;
-    private final Function<Double, Integer> activationFunction;
+    private double[] weights;
+    private double bias;
+    private final ActivationType activationType;
+    
+    // Fields for backpropagation
+    private double output; // Stores the last calculated output
+    private double delta;  // Stores the error gradient
 
     /**
      * Constructs a new Neuron.
-     * @param weights The connection weights for the inputs (w1, w2, ...).
+     * @param weights The connection weights for the inputs (w1, w2, ...). A defensive copy is made.
      * @param bias The bias value, which is added to the weighted sum (often denoted as w0).
-     * @param activationFunction A function (e.g., a step function) that transforms the net input into the neuron's final output.
+     * @param activationType The type of activation function to use (e.g., SIGMOID).
      */
-    public Neuron(double[] weights, double bias, Function<Double, Integer> activationFunction) {
-        this.weights = weights;
+    public Neuron(double[] weights, double bias, ActivationType activationType) {
+        this.weights = weights.clone(); // Use clone to ensure external immutability
         this.bias = bias;
-        this.activationFunction = activationFunction;
+        this.activationType = activationType;
     }
 
     /**
@@ -39,13 +43,13 @@ public class Neuron {
      * @return The activated output of the neuron (e.g., 0 or 1).
      * @throws IllegalArgumentException if the number of inputs does not match the number of weights.
      */
-    public int fire(double[] inputs)
+    public double fire(double[] inputs)
     {
-        // Verificação de segurança: garante que os inputs correspondem aos pesos
+        // Safety check: ensure inputs match weights
         if (inputs.length != weights.length) {
             throw new IllegalArgumentException(
-                    "Erro: N.º de inputs (" + inputs.length +
-                            ") não corresponde ao n.º de pesos (" + weights.length + ")"
+                    "Error: Number of inputs (" + inputs.length +
+                            ") does not match the number of weights (" + weights.length + ")"
             );
         }
 
@@ -53,9 +57,40 @@ public class Neuron {
         for (int i = 0; i < weights.length; i++) {
             sum += weights[i] * inputs[i];
         }
+        
+        // Apply the activation function (e.g., step) to the sum
+        this.output = this.activationType.getActivation().apply(sum);
+        return this.output;
+    }
 
-        // Aplica a função de ativação (ex: degrau) à soma
-        return activationFunction.apply(sum);
+    /**
+     * Calculates the error gradient (delta) for an output layer neuron.
+     * @param error The difference between the expected output and the actual output.
+     */
+    public void calculateDeltaForOutputLayer(double error) {
+        this.delta = error * this.activationType.getDerivative().apply(this.output);
+    }
+
+    /**
+     * Calculates the error gradient (delta) for a hidden layer neuron.
+     * @param errorSum The weighted sum of deltas from the next layer.
+     */
+    public void calculateDeltaForHiddenLayer(double errorSum) {
+        this.delta = errorSum * this.activationType.getDerivative().apply(this.output);
+    }
+
+    /**
+     * Updates the neuron's weights and bias based on the calculated delta and the learning rate.
+     * This is the core learning step in backpropagation.
+     *
+     * @param inputs The input values that were fed into this neuron during the forward pass.
+     * @param learningRate The learning rate, which controls the step size of the weight adjustments.
+     */
+    public void updateWeights(double[] inputs, double learningRate) {
+        this.bias += learningRate * delta;
+        for (int i = 0; i < weights.length; i++) {
+            this.weights[i] += learningRate * delta * inputs[i];
+        }
     }
 
     /**
@@ -77,10 +112,28 @@ public class Neuron {
 
     /**
      * Returns the array of input weights (w1, w2, ...).
-     * This is required for the {@link NeuralNetwork#visualize()} method.
+     * <p>
+     * Returns a clone of the internal weights array to protect the neuron's state from external modifications (encapsulation).
      * @return A copy of the weights array.
      */
-    public double[] getWeights() {
-        return this.weights;
+    public double[] getWeights()
+    {
+        return this.weights.clone();
+    }
+
+    /**
+     * Returns the last calculated output of the neuron. Required for backpropagation.
+     * @return The last output value.
+     */
+    public double getOutput() {
+        return output;
+    }
+
+    /**
+     * Returns the calculated error gradient (delta). Required for backpropagation.
+     * @return The delta value.
+     */
+    public double getDelta() {
+        return delta;
     }
 }
