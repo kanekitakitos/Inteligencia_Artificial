@@ -1,13 +1,12 @@
 # Problem 3: Perceptrons
 
-**Autor:** IA 2025/26
+**Autor:** IA 2025/26 
 
 Este projeto implementa um Perceptron e uma Rede Neuronal Multicamada (MLP) em Java, baseando-se na resolução de um problema de classificação linearmente separável. O código demonstra a construção, configuração e teste de redes neuronais para resolver funções lógicas.
 
 ## Estrutura do Projeto
 
 O projeto está organizado nas seguintes classes Java:
-
 -   `Neuron.java`: Representa um único neurónio. Encapsula os pesos, o bias e a função de ativação.
 -   `NeuralNetwork.java`: Representa uma rede neuronal feed-forward. Orquestra as camadas de neurónios e gere o fluxo de dados.
 -   `Main.java`: O ponto de entrada da aplicação. Configura a rede para resolver um problema específico, executa os testes e imprime os resultados.
@@ -68,7 +67,7 @@ A soma ponderada (input líquido) é $z = w_0 + w_1x_1 + w_2x_2$. Para resolver 
 
 ## Tarefa 3: Implementar e testar o neurónio
 
-Testamos o neurónio único configurado na Tarefa 2. A implementação em Java confirma que ele funciona perfeitamente para o problema.
+Testamos o neurónio único configurado na Tarefa 2. A tabela abaixo valida o seu funcionamento.
 
 | Entrada ($x_1, x_2$) | Cálculo ($z = -1 + 0 \cdot x_1 + 1 \cdot x_2$) | Saída $y$ | Esperada |
 | :------------------: | :-------------------------------------------: | :-------: | :------: |
@@ -78,71 +77,88 @@ Testamos o neurónio único configurado na Tarefa 2. A implementação em Java c
 |         1, 1         |               $z = -1 + 0 + 1 = 0$              |   **1**   |  **1**   |
 
 ---
+### Implementação em Java
 
-## Tarefa 4: Configurar a Rede Multicamada (MLP)
+A implementação em Java para testar este neurónio único pode ser encontrada no diretório `src/`. O código configura uma MLP com uma topologia `[2, 1]` para atuar como um único neurónio e aplica os pesos calculados manualmente para resolver o problema.
 
-Para demonstrar uma rede mais complexa, o problema é resolvido com uma estrutura MLP, decompondo a lógica.
+Para uma análise detalhada do código, veja os arquivos-fonte no projeto.
+
+---
+
+## Tarefa 4: Configurar a Rede Multicamada (MLP) para a função XNOR
+
+Para demonstrar a capacidade de uma rede mais complexa, configuramos uma MLP para resolver a função **XNOR (NOT XOR)**. Este é um problema clássico **não linearmente separável**, que um único neurónio não consegue resolver.
 
 ### Lógica (Álgebra Booleana)
 
-A função lógica implementada é equivalente a $y=x_2$:
+A tabela de verdade para a função XNOR é:
+
+| $x_1$ | $x_2$ | $y$ (Saída) |
+| :---: | :---: | :---------: |
+|   0   |   0   |    **1**    |
+|   0   |   1   |    **0**    |
+|   1   |   0   |    **0**    |
+|   1   |   1   |    **1**    |
+
+Para resolver este problema, decompomos a lógica em funções linearmente separáveis:
 
 $$
-y = (\neg x_1 \cdot x_2) + (x_1 \cdot x_2)
+y = (\neg x_1 \cdot \neg x_2) + (x_1 \cdot x_2)
 $$
+
+-   O **Neurónio A** implementará a porta **NOR** ($\neg x_1 \cdot \neg x_2$).
+-   O **Neurónio B** implementará a porta **AND** ($x_1 \cdot x_2$).
+-   O **Neurónio C** combinará as saídas com uma porta **OR** ($A + B$).
 
 ### Diagrama da Rede Neuronal
 
 O diagrama abaixo ilustra a arquitetura da rede, onde os neurônios A e B formam a camada oculta e o neurônio C é a camada de saída.
 
 ```mermaid
-graph LR
-    %% Define o estilo padrão: borda preta, mas deixa a cor do texto e do fundo automáticas para se adaptar ao tema
-    classDef default stroke:#000,stroke-width:2px;
-
-    %% Entradas e Saída (Círculos invisíveis)
-    x1(( x₁ )):::nolabel
-    x2(( x₂ )):::nolabel
-    y(( y )):::nolabel
-
-    %% Nós circulares (neurônios)
-    A((" A "))
-    B((" B "))
-    C((" C "))
-
-    %% Conexões
+graph TD
+    subgraph "Camada de Entrada"
+        x1(x₁)
+        x2(x₂)
+    end
+    
+    subgraph "Camada Oculta"
+        A(Neurónio A <br> NOR)
+        B(Neurónio B <br> AND)
+    end
+    
+    subgraph "Camada de Saída"
+        C(Neurónio C <br> OR)
+    end
+    
     x1 --> A
-    x1 --> B
     x2 --> A
+    x1 --> B
     x2 --> B
-    A -- "¬x₁ · x₂" --> C
-    B -- "x₁ · x₂" --> C
-    C ----> y
-
-    %% Estilo para esconder caixas de texto
-    classDef nolabel fill:none,stroke:none,font-size:16px;
+    A --> C
+    B --> C
+    C --> y(Saída y)
 ```
 
 ### Resolução (Configurar os Pesos da MLP)
 
-Configuramos os pesos de cada neurónio para executar a sua parte da lógica.
+Configuramos os pesos de cada neurónio para executar a sua parte da lógica, usando a Função Degrau.
 
-#### Neurónio A = $\neg x_1 \cdot x_2$
--   **Pesos:** $w_0 = -1$, $w_1 = -2$, $w_2 = 2$
+#### Neurónio A = $\neg x_1 \cdot \neg x_2$ (NOR)
+-   **Pesos:** $w_0 = 0.5$, $w_1 = -1$, $w_2 = -1$
 
-#### Neurónio B = $x_1 \cdot x_2$
--   **Pesos:** $w_0 = -2$, $w_1 = 1$, $w_2 = 1$
+#### Neurónio B = $x_1 \cdot x_2$ (AND)
+-   **Pesos:** $w_0 = -1.5$, $w_1 = 1$, $w_2 = 1$
 
 #### Neurónio C = $A + B$ (A OR B)
--   **Pesos:** $w_0 = -1$, $w_A = 1$, $w_B = 1$
+-   **Pesos:** $w_0 = -0.5$, $w_A = 1$, $w_B = 1$
 
 ### Verificação Final da Rede Completa
 
-A implementação em Java da rede MLP foi testada e funciona perfeitamente, conforme a tabela abaixo.
+A implementação em Java da rede MLP foi testada e funciona perfeitamente para a função XNOR, conforme a tabela abaixo.
 
 | Entrada ($x_1, x_2$) | Neurónio A ($a$) | Neurónio B ($b$) | Neurónio C ($y$) | Saída Final | Esperada |
 | :------------------: | :--------------: | :--------------: | :--------------: | :---------: | :------: |
-|         0, 0         |      **0**       |      **0**       |      **0**       |    **0**    |  **0**   |
-|         0, 1         |      **1**       |      **0**       |      **1**       |    **1**    |  **1**   |
+|         0, 0         |      **1**       |      **0**       |      **1**       |    **1**    |  **1**   |
+|         0, 1         |      **0**       |      **0**       |      **0**       |    **0**    |  **0**   |
 |         1, 0         |      **0**       |      **0**       |      **0**       |    **0**    |  **0**   |
 |         1, 1         |      **0**       |      **1**       |      **1**       |    **1**    |  **1**   |
