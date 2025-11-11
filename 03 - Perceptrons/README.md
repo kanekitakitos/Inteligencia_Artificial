@@ -1,28 +1,33 @@
 # Problem 3: Perceptrons
 
-**Autor:** IA 2025/26 
+**Autor:** IA 2025/26
 
-Este projeto implementa um Perceptron e uma Rede Neuronal Multicamada (MLP) em Java, baseando-se na resolução de um problema de classificação linearmente separável. O código demonstra a construção, configuração e teste de redes neuronais para resolver funções lógicas.
+Este projeto implementa uma Rede Neuronal Multicamada (MLP) em Java. O código demonstra a construção, configuração manual, treino e teste de redes neuronais para resolver tanto funções lógicas linearmente separáveis quanto não separáveis.
 
 ## Estrutura do Projeto
 
-O projeto está organizado nas seguintes classes Java:
--   `Neuron.java`: Representa um único neurónio. Encapsula os pesos, o bias e a função de ativação.
--   `NeuralNetwork.java`: Representa uma rede neuronal feed-forward. Orquestra as camadas de neurónios e gere o fluxo de dados.
--   `Main.java`: O ponto de entrada da aplicação. Configura a rede para resolver um problema específico, executa os testes e imprime os resultados.
+O projeto está organizado nas seguintes classes e pacotes principais:
+-   `neural/MLP.java`: A classe principal que implementa a Rede Neuronal Multicamada (MLP), capaz de ser configurada, treinada e usada para previsões.
+-   `neural/activation/`: Pacote contendo as funções de ativação (ex: `Sigmoid`, `Step`) e a sua interface `IDifferentiableFunction`.
+-   `apps/SingleNeuron0101.java`: Aplicação de exemplo que demonstra a configuração manual de um único neurónio para resolver a função lógica `y = x2`.
+-   `apps/MLPNXOR.java`: Aplicação de exemplo que treina uma MLP para resolver o problema não linearmente separável da porta XNOR.
 
 ## Como Executar
 
 1.  **Compilar o código:**
-    Navegue até ao diretório `src` e execute o compilador Java.
+    A partir do diretório raiz do projeto, compile todos os arquivos `.java`.
     ```bash
-    javac src/*.java
+    javac src/math/*.java src/neural/*.java src/neural/activation/*.java src/apps/*.java
     ```
 
 2.  **Executar a aplicação:**
-    A partir do diretório pai de `src`, execute a classe `Main`.
+    Para testar o neurónio único (Tarefa 3):
     ```bash
-    java src.Main
+    java -cp src apps.SingleNeuron0101
+    ```
+    Para treinar e testar a MLP para XNOR (Tarefa 4):
+    ```bash
+    java -cp src apps.MLPNXOR
     ```
 
 ---
@@ -79,9 +84,7 @@ Testamos o neurónio único configurado na Tarefa 2. A tabela abaixo valida o se
 ---
 ### Implementação em Java
 
-A implementação em Java para testar este neurónio único pode ser encontrada no diretório `src/`. O código configura uma MLP com uma topologia `[2, 1]` para atuar como um único neurónio e aplica os pesos calculados manualmente para resolver o problema.
-
-Para uma análise detalhada do código, veja os arquivos-fonte no projeto.
+A implementação em Java que testa este neurónio único está na classe `SingleNeuron0101.java`. O código configura uma MLP com uma topologia `[2, 1]` para atuar como um único neurónio, aplica os pesos calculados manualmente e valida o resultado.
 
 ---
 

@@ -1,7 +1,6 @@
 package math;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.function.BiFunction;
@@ -39,12 +38,18 @@ public class Matrix {
         if (seed < 0)
             seed = (int) System.currentTimeMillis();
 
-        Random rand = new Random(seed);
+        return Rand(rows, cols, new Random(seed));
+    }
+
+    static public Matrix Rand(int rows, int cols, Random rand) {
+        Matrix out = new Matrix(rows, cols);
+
         for (int i = 0; i < rows; i++)
             for (int j = 0; j < cols; j++)
                 out.data[i][j] = rand.nextDouble();
 
         return out;
+
     }
 
 
@@ -142,6 +147,34 @@ public class Matrix {
                 total += data[i][j];
         }
         return total;
+    }
+
+    //Sum by columns
+    public Matrix sumColumns() {
+        Matrix result = new Matrix(1, this.cols);
+
+        for (int j = 0; j < this.cols; j++) {
+            double sum = 0.0;
+            for (int i = 0; i < this.rows; i++)
+                sum += this.data[i][j];
+            result.data[0][j] = sum;
+        }
+        return result;
+    }
+
+    //Add row vector to each row of the matrix
+    public Matrix addRowVector(Matrix rowVector) {
+        if (rowVector.rows() != 1 || rowVector.cols() != this.cols) {
+            throw new IllegalArgumentException("Incompatible sizes for adding row vector.");
+        }
+        Matrix result = new Matrix(this.rows, this.cols);
+        //add row vector to each row
+        for (int i = 0; i < this.rows; i++) {
+            for (int j = 0; j < this.cols; j++) {
+                result.data[i][j] = this.data[i][j] + rowVector.data[0][j];
+            }
+        }
+        return result;
     }
 
 

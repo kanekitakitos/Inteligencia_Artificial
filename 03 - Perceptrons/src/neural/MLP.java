@@ -2,8 +2,6 @@ package neural;
 
 import math.Matrix;
 import neural.activation.IDifferentiableFunction;
-
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -13,7 +11,7 @@ import java.util.Random;
 public class MLP {
 
     private Matrix[] w;  //weights for each layer
-    private double[] b;  //biases for each layer
+    private Matrix[] b;  //biases for each layer (one per neuron)
     private Matrix[] yp; //outputs for each layer
     private IDifferentiableFunction[] act; //activation functions for each layer
     private int numLayers;
@@ -40,13 +38,13 @@ public class MLP {
 
         //create weights and biases for each layer
         //each row in w[l] represents the weights that are input
-        w = new Matrix[numLayers-1];
-        b = new double[numLayers-1];
+        w = new Matrix[numLayers - 1];
+        b = new Matrix[numLayers - 1];
 
         Random rnd = new Random(seed);
-        for (int i=0; i < numLayers-1; i++) {
-            w[i] = Matrix.Rand(layerSizes[i], layerSizes[i + 1], seed);
-            b[i] = rnd.nextDouble();
+        for (int i = 0; i < numLayers - 1; i++) {
+            w[i] = Matrix.Rand(layerSizes[i], layerSizes[i + 1], rnd);
+            b[i] = Matrix.Rand(1, layerSizes[i + 1], rnd); // One bias per neuron in the next layer
         }
     }
 
@@ -57,14 +55,14 @@ public class MLP {
     // yp[l+1] = Sigmoid( yp[l] * w[l]+b[l] )
     public Matrix predict(Matrix X) {
         yp[0] = X;
-        for (int l=0; l < numLayers-1; l++)
-            yp[l+1] = yp[l].dot(w[l]).add(b[l]).apply(act[l].fnc());
+        for (int l = 0; l < numLayers - 1; l++)
+            yp[l + 1] = yp[l].dot(w[l]).addRowVector(b[l]).apply(act[l].fnc());
         return yp[numLayers-1];
     }
 
 
     // back propagation
-    public Matrix backPropagation(Matrix X, Matrix y, double lr) {
+    private Matrix backPropagation(Matrix X, Matrix y, double lr) {
         Matrix e = null;
         Matrix delta = null;
 
@@ -89,8 +87,8 @@ public class MLP {
             // Update weights and biases for the current layer
             // w[l] += (yp[l]^T * delta) * lr
             w[l] = w[l].add(yp[l].transpose().dot(delta).mult(lr));
-            // b[l] += sum(delta rows) * lr
-            b[l] += delta.sum() * lr;
+            // b[l] += sum of delta columns * lr
+            b[l] = b[l].add(delta.sumColumns().mult(lr));
         }
         return e;
     }
@@ -129,7 +127,7 @@ public class MLP {
      * Returns the learned bias values for each layer.
      * @return An array of doubles representing the biases.
      */
-    public double[] getBiases() { return b; }
+    public Matrix[] getBiases() { return b; }
 
     /**
      * Sets the weight matrices for each layer.
@@ -140,7 +138,8 @@ public class MLP {
      * @param newWeights An array of Matrix objects representing the new weights.
      * @throws IllegalArgumentException if the number of matrices or their dimensions do not match the network's topology.
      */
-    public void setWeights(Matrix[] newWeights) {
+    public void setWeights(Matrix[] newWeights)
+    {
         if (newWeights.length != this.w.length) {
             throw new IllegalArgumentException("Invalid number of weight matrices. Expected: " + this.w.length + ", Got: " + newWeights.length);
         }
@@ -154,10 +153,34 @@ public class MLP {
         this.w = newWeights;
     }
 
-    public void setBiases(double[] newBiases) {
+    public void setBiases(Matrix[] newBiases) {
         if (newBiases.length != this.b.length) {
-            throw new IllegalArgumentException("Invalid number of biases. Expected: " + this.b.length + ", Got: " + newBiases.length);
+            throw new IllegalArgumentException("Invalid number of bias matrices. Expected: " + this.b.length + ", Got: " + newBiases.length);
+        }
+        for (int i = 0; i < newBiases.length; i++) {
+            if (newBiases[i].rows() != this.b[i].rows() || newBiases[i].cols() != this.b[i].cols()) {
+                throw new IllegalArgumentException("Incompatible dimensions for bias matrix at layer " + i +
+                        ". Expected: " + this.b[i].rows() + "x" + this.b[i].cols() +
+                        ", Got: " + newBiases[i].rows() + "x" + newBiases[i].cols());
+            }
         }
         this.b = newBiases;
+    }
+
+    // Overload for compatibility with single-neuron test case
+    public void setBiases(double[] newBiases)
+    {
+        if (newBiases.length == this.b.length) {
+            for (int i = 0; i < newBiases.length; i++)
+            {
+                if (this.b[i].cols() == 1) {
+                    this.b[i] = new Matrix(new double[][]{{newBiases[i]}});
+                } else {
+                    throw new IllegalArgumentException("Cannot set single double bias for a layer with multiple neurons.");
+                }
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid number of biases. Expected: " + this.b.length + ", Got: " + newBiases.length);
+        }
     }
 }
