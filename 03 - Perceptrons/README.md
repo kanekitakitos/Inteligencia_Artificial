@@ -9,7 +9,7 @@ Este projeto implementa uma Rede Neuronal Multicamada (MLP) em Java. O código d
 O projeto está organizado nas seguintes classes e pacotes principais:
 -   `neural/MLP.java`: A classe principal que implementa a Rede Neuronal Multicamada (MLP), capaz de ser configurada, treinada e usada para previsões.
 -   `neural/activation/`: Pacote contendo as funções de ativação (ex: `Sigmoid`, `Step`) e a sua interface `IDifferentiableFunction`.
--   `apps/SingleNeuron0101.java`: Aplicação de exemplo que demonstra a configuração manual de um único neurónio para resolver a função lógica `y = x2`.
+-   `apps/MLPNXOR.java` (com modo `singleNeuron`): Aplicação de exemplo que demonstra tanto a configuração manual de um único neurónio (para a função `y = x2`) quanto o treino de uma MLP para o problema XNOR.
 -   `apps/MLPNXOR.java`: Aplicação de exemplo que treina uma MLP para resolver o problema não linearmente separável da porta XNOR.
 
 ## Como Executar
@@ -22,8 +22,8 @@ O projeto está organizado nas seguintes classes e pacotes principais:
 
 2.  **Executar a aplicação:**
     Para testar o neurónio único (Tarefa 3):
-    ```bash
-    java -cp src apps.SingleNeuron0101
+    ```bash 
+    java -cp src apps.MLPNXOR 
     ```
     Para treinar e testar a MLP para XNOR (Tarefa 4):
     ```bash
@@ -84,7 +84,7 @@ Testamos o neurónio único configurado na Tarefa 2. A tabela abaixo valida o se
 ---
 ### Implementação em Java
 
-A implementação em Java que testa este neurónio único está na classe `SingleNeuron0101.java`. O código configura uma MLP com uma topologia `[2, 1]` para atuar como um único neurónio, aplica os pesos calculados manualmente e valida o resultado.
+A implementação em Java que testa este neurónio único está no método `singleNeuron()` da classe `apps.MLPNXOR`. O código configura uma MLP com uma topologia `[2, 1]` para atuar como um único neurónio, aplica os pesos calculados manualmente e valida o resultado.
 
 ---
 
@@ -165,3 +165,53 @@ A implementação em Java da rede MLP foi testada e funciona perfeitamente para 
 |         0, 1         |      **0**       |      **0**       |      **0**       |    **0**    |  **0**   |
 |         1, 0         |      **0**       |      **0**       |      **0**       |    **0**    |  **0**   |
 |         1, 1         |      **0**       |      **1**       |      **1**       |    **1**    |  **1**   |
+
+---
+
+## Tarefa 5: Treino com Backpropagation (XNOR)
+
+Esta secção analisa os resultados do treino da rede para a função XNOR, utilizando o algoritmo de *backpropagation*. Comparamos os pesos calculados manualmente com os pesos obtidos após o treino.
+
+### Comparação dos Pesos (Manuais vs. Treinados)
+
+**Pesos Manuais (Baseados em Lógica):**
+
+| Camada Oculta | Neurónio A (NOR) | Neurónio B (AND) |
+| :------------ | :--------------: | :--------------: |
+| $w_0$ (Bias)  |       0.5        |       -1.5       |
+| $w_1$ (de $x_1$) |       -1         |        1         |
+| $w_2$ (de $x_2$) |       -1         |        1         |
+
+| Camada de Saída | Neurónio C (OR) |
+| :-------------- | :-------------: |
+| $w_0$ (Bias)    |      -0.5       |
+| $w_A$ (de A)    |        1        |
+| $w_B$ (de B)    |        1        |
+
+**Pesos Treinados (Resultado do Backpropagation):**
+
+Os pesos abaixo são um exemplo obtido após treinar a rede com uma semente aleatória específica.
+
+| Camada Oculta | Neurónio A (H0) | Neurónio B (H1) |
+| :------------ | :-------------: | :-------------: |
+| $w_0$ (Bias)  |     -2.9534     |     -2.2084     |
+| $w_1$ (de $x_1$) |      3.7568     |      4.6566     |
+| $w_2$ (de $x_2$) |      5.2512     |      4.6123     |
+
+| Camada de Saída | Neurónio C (Out0) |
+| :-------------- | :---------------: |
+| $w_0$ (Bias)    |       1.8347      |
+| $w_A$ (de H0)   |       0.6166      |
+| $w_B$ (de H1)   |       0.5152      |
+
+**Análise:** Os pesos obtidos pelo treino são muito diferentes dos calculados manualmente. Isto ocorre porque:
+1.  **Não há solução única:** Existem infinitas combinações de pesos que podem resolver o problema XNOR.
+2.  **Inicialização Aleatória:** O algoritmo de backpropagation parte de pesos aleatórios e converge para uma solução local, que depende desse ponto de partida.
+3.  **Lógica vs. Otimização Matemática:** A solução manual foi baseada em lógica humana (portas NOR, AND, OR). A solução do treino é puramente matemática, focada em minimizar o erro (MSE). Os neurónios da camada oculta na rede treinada provavelmente não representam funções lógicas "limpas", mas sim uma combinação matemática que, em conjunto, resolve o problema.
+
+### Evolução do Erro de Treino (MSE)
+
+O gráfico demonstra a evolução do Erro Quadrático Médio (MSE) ao longo de 10.000 épocas de treino. Observa-se que o erro diminui drasticamente nas primeiras épocas e converge para um valor muito próximo de zero, indicando que a rede aprendeu a mapear as entradas para as saídas desejadas com sucesso.
+
+![Gráfico da evolução do erro (MSE)](images/grafoErro.png)
+

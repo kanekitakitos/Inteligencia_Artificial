@@ -15,12 +15,15 @@ public class MLPNXOR {
 
     public static void main(String[] args)
     {
-        boolean single = true;
+        boolean single = false;
 
         if(single)
-            singleNeuron(args);
+            singleNeuron();
         else
             mlp();
+
+
+
 
     }
 
@@ -61,7 +64,7 @@ public class MLPNXOR {
 
     static public void mlp()
     {
-        double lr    = 0.4;  // learning rate.
+        double lr    = 0.4;  // learning rate 0 > lr > 1
         int    epochs = 10000; //define the number of epochs in the order of thousands
         int[] topology = {2, 2, 1};
 
@@ -117,7 +120,8 @@ public class MLPNXOR {
 
         sc.close();
     }
-    public static void singleNeuron(String[] args)
+
+    public static void singleNeuron()
     {
         // 1. Define o dataset para a lógica y = x2 (padrão 0101)
         double[][] inputs = {

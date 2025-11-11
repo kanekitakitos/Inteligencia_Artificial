@@ -110,9 +110,9 @@ public class MLP {
             mse[epoch] = e.dot(e.transpose()).get(0, 0) / nSamples;
 
 //            // Optional: Print progress to see the effect of the learning rate
-//            if ((epoch + 1) % (epochs / 10) == 0) {
-//                System.out.printf("Epoch %d/%d, MSE: %.6f\n", epoch + 1, epochs, mse[epoch]);
-//            }
+           if ((epoch + 1) % (epochs / 100) == 0) {
+                System.out.printf("Epoch %d/%d, MSE: %.6f\n", epoch + 1, epochs, mse[epoch]);
+            }
         }
         return mse;
     }
