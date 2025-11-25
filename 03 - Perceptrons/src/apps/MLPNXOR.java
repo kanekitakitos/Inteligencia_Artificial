@@ -8,8 +8,8 @@ import neural.activation.Step;
 import java.util.Scanner;
 
 /**
- * @author hdaniel@ualg.pt
- * @version 202511050300
+ * @author Brandon Mejia
+ * @version 25/11/2025
  */
 public class MLPNXOR {
 

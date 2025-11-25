@@ -1,0 +1,212 @@
+package neural;
+
+import math.Matrix;
+import neural.activation.IDifferentiableFunction;
+import java.util.Random;
+
+/**
+ * @author hdaniel@ualg.pt
+ * @version 202511052038
+ */
+public class MLP {
+
+    private Matrix[] w;  //weights for each layer
+    private Matrix[] b;  //biases for each layer (one per neuron)
+    private Matrix[] yp; //outputs for each layer
+    private IDifferentiableFunction[] act; //activation functions for each layer
+    private int numLayers;
+
+    /* Create a Multi-Layer Perceptron with the given layer sizes.
+     * layerSizes is an array where each element represents the number of neurons in that layer.
+     * For example, new MLP(new int[]{3, 5, 2}) creates a MLP with 3 input neurons,
+     * 5 hidden neurons, and 2 output neurons.
+     *
+     * PRE: layerSizes.length >= 2
+     * PRE: act.length == layerSizes.length - 1
+     */
+    public MLP(int[] layerSizes, IDifferentiableFunction[] act, int seed) {
+        if (seed < 0)
+            seed = (int) System.currentTimeMillis();
+
+        numLayers = layerSizes.length;
+
+        //setup activation by layer
+        this.act = act;
+
+        //create output storage for each layer but the input layer
+        yp = new Matrix[numLayers];
+
+        //create weights and biases for each layer
+        //each row in w[l] represents the weights that are input
+        w = new Matrix[numLayers - 1];
+        b = new Matrix[numLayers - 1];
+
+        Random rnd = new Random(seed);
+        for (int i = 0; i < numLayers - 1; i++) {
+            w[i] = Matrix.Rand(layerSizes[i], layerSizes[i + 1], rnd);
+            b[i] = Matrix.Rand(1, layerSizes[i + 1], rnd); // One bias per neuron in the next layer
+        }
+    }
+
+
+    // Feed forward propagation
+    // also used to predict after training the net
+    // yp[0] = X
+    // yp[l+1] = Sigmoid( yp[l] * w[l]+b[l] )
+    public Matrix predict(Matrix X) {
+        yp[0] = X;
+        for (int l = 0; l < numLayers - 1; l++)
+            yp[l + 1] = yp[l].dot(w[l]).addRowVector(b[l]).apply(act[l].fnc());
+        return yp[numLayers-1];
+    }
+
+
+    // back propagation
+    private Matrix backPropagation(Matrix X, Matrix y, double lr) {
+        Matrix e = null;
+        Matrix delta = null;
+
+        //back propagation using generalised delta rule
+        for (int l = numLayers-2; l >= 0; l--) {
+            if (l == numLayers-2) {                     //output layer
+                e = y.sub(yp[l + 1]);                   //e = y - yp[l+1]
+            }
+            else {                                      //propagate error to previous layer
+                // Propagate the error to the previous layer
+                // e = delta * w[l+1]^T
+                e = delta.dot(w[l+1].transpose());
+            }
+
+            // Compute the derivative of the activation function for the current layer's output
+            // dy = yp[l+1] .* (1-yp[l+1])
+            Matrix dy = yp[l+1].apply(act[l].derivative());
+            // Compute delta (local gradient)
+            // delta = e .* dy
+            delta = e.mult(dy);
+
+            // Update weights and biases for the current layer
+            // w[l] += (yp[l]^T * delta) * lr
+            w[l] = w[l].add(yp[l].transpose().dot(delta).mult(lr));
+            // b[l] += sum of delta columns * lr
+            b[l] = b[l].add(delta.sumColumns().mult(lr));
+        }
+        return e;
+    }
+
+
+    public double[] train(Matrix X, Matrix y, double learningRate, int epochs) {
+        int nSamples = X.rows();
+        double[] mse = new double[epochs];
+
+        for (int epoch=0; epoch < epochs; epoch++) {
+
+            //forward propagation
+            Matrix ypo = predict(X);
+
+            //backward propagation
+            Matrix e = backPropagation(X, y, learningRate);
+
+            //mse
+            mse[epoch] = e.dot(e.transpose()).get(0, 0) / nSamples;
+
+//            // Optional: Print progress to see the effect of the learning rate
+           if ((epoch + 1) % (epochs / 100) == 0) {
+                System.out.printf("Epoch %d/%d, MSE: %.6f\n", epoch + 1, epochs, mse[epoch]);
+            }
+        }
+        return mse;
+    }
+
+    /**
+     * Returns the learned weight matrices for each layer.
+     * @return An array of Matrix objects representing the weights.
+     */
+    public Matrix[] getWeights() { return w; }
+
+    /**
+     * Returns the learned bias values for each layer.
+     * @return An array of doubles representing the biases.
+     */
+    public Matrix[] getBiases() { return b; }
+
+    /**
+     * Sets the weight matrices for each layer.
+     * <p>
+     * This method allows for manually setting the weights of the network, for example,
+     * to test a pre-calculated configuration without training.
+     *
+     * @param newWeights An array of Matrix objects representing the new weights.
+     * @throws IllegalArgumentException if the number of matrices or their dimensions do not match the network's topology.
+     */
+    public void setWeights(Matrix[] newWeights)
+    {
+        if (newWeights.length != this.w.length) {
+            throw new IllegalArgumentException("Invalid number of weight matrices. Expected: " + this.w.length + ", Got: " + newWeights.length);
+        }
+        for (int i = 0; i < newWeights.length; i++) {
+            if (newWeights[i].rows() != this.w[i].rows() || newWeights[i].cols() != this.w[i].cols()) {
+                throw new IllegalArgumentException("Incompatible dimensions for weight matrix at layer " + i +
+                        ". Expected: " + this.w[i].rows() + "x" + this.w[i].cols() +
+                        ", Got: " + newWeights[i].rows() + "x" + newWeights[i].cols());
+            }
+        }
+        this.w = newWeights;
+    }
+
+    public void setBiases(Matrix[] newBiases) {
+        if (newBiases.length != this.b.length) {
+            throw new IllegalArgumentException("Invalid number of bias matrices. Expected: " + this.b.length + ", Got: " + newBiases.length);
+        }
+        for (int i = 0; i < newBiases.length; i++) {
+            if (newBiases[i].rows() != this.b[i].rows() || newBiases[i].cols() != this.b[i].cols()) {
+                throw new IllegalArgumentException("Incompatible dimensions for bias matrix at layer " + i +
+                        ". Expected: " + this.b[i].rows() + "x" + this.b[i].cols() +
+                        ", Got: " + newBiases[i].rows() + "x" + newBiases[i].cols());
+            }
+        }
+        this.b = newBiases;
+    }
+
+    // Overload for compatibility with single-neuron test case
+    public void setBiases(double[] newBiases)
+    {
+        if (newBiases.length == this.b.length) {
+            for (int i = 0; i < newBiases.length; i++)
+            {
+                if (this.b[i].cols() == 1) {
+                    this.b[i] = new Matrix(new double[][]{{newBiases[i]}});
+                } else {
+                    throw new IllegalArgumentException("Cannot set single double bias for a layer with multiple neurons.");
+                }
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid number of biases. Expected: " + this.b.length + ", Got: " + newBiases.length);
+        }
+    }
+    
+    /**
+     * Creates a deep copy of the current MLP instance.
+     * The new MLP will have the same topology, activation functions, weights, and biases,
+     * but it will be a completely independent object.
+     *
+     * @return A new MLP instance that is a clone of the current one.
+     */
+    public MLP clone() {
+        // 1. Recreate the topology from the weight matrices
+        int[] topology = new int[this.numLayers];
+        topology[0] = this.w[0].rows();
+        for (int i = 0; i < this.w.length; i++) {
+            topology[i + 1] = this.w[i].cols();
+        }
+
+        // 2. Create a new MLP instance with the same topology and activation functions
+        // The seed is not relevant here, as we are going to replace the weights and biases.
+        MLP clonedMlp = new MLP(topology, this.act, 1);
+
+        // 3. Copy the weights and biases
+        clonedMlp.setWeights(this.getWeights());
+        clonedMlp.setBiases(this.getBiases());
+
+        return clonedMlp;
+    }
+}
