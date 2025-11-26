@@ -107,7 +107,7 @@ public class MLP {
             Matrix e = backPropagation(X, y, learningRate);
 
             //mse
-            mse[epoch] = e.dot(e.transpose()).get(0, 0) / nSamples;
+            mse[epoch] = e.mult(e).sum() / nSamples;
 
 //            // Optional: Print progress to see the effect of the learning rate
            if ((epoch + 1) % (epochs / 100) == 0) {

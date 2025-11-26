@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +24,7 @@ class TestMLP23 {
     private MLP mlp;
     private Matrix testX;
     private Matrix testY;
+    private int seek = 12345;
 
 
     /**
@@ -31,7 +34,7 @@ class TestMLP23 {
      */
     private void loadData()
     {
-        String testFile = "src/data/dataset.csv";
+        String testFile = "src/data/test.csv";
         List<double[]> featureList = new ArrayList<>(); // Changed from MLP to mlp
         List<double[]> labelList = new ArrayList<>();
 
@@ -64,36 +67,50 @@ class TestMLP23 {
         loadData();
 
         // Get a pre-trained clone of the MLP model
-        MLP23 modelFactory = new MLP23();
+        MLP23 modelFactory = new MLP23(seek);
+
+        // Caminhos para os seus arquivos de dados
+        String inputPath = "src/data/dataset.csv";
+        String outputPath = "src/data/labels.csv";
+        modelFactory.train(inputPath, outputPath);
         this.mlp = modelFactory.getMLP();
     }
 
     @Test
     @DisplayName("Should achieve high accuracy on the test set")
     void testModelAccuracy() {
-        int correctPredictions = 0;
-        for (int i = 0; i < testY.rows(); i++) {
-            // Create a 1xN matrix for a single prediction
-            double[] singleTest = new double[testX.cols()];
-            for (int j = 0; j < testX.cols(); j++) {
-                singleTest[j] = testX.get(i, j);
-            }
-            Matrix input = new Matrix(new double[][]{singleTest});
+        // Cria um arquivo para registrar os resultados detalhados do teste
+        try (PrintWriter writer = new PrintWriter(new FileWriter("src/data/test_results.txt"))) {
+            int correctPredictions = 0;
+            writer.println("--- Análise de Predição do Teste ---");
+            writer.println("------------------------------------");
 
-            Matrix prediction = mlp.predict(input);
-            long predictedLabel = Math.round(prediction.get(0, 0));
-            double actualValue = testY.get(i, 0);
+            for (int i = 0; i < testY.rows(); i++) {
+                Matrix inputRow = getRowAsMatrix(testX, i);
+                Matrix prediction = mlp.predict(inputRow);
+                long predictedLabel = Math.round(prediction.get(0, 0));
+                double actualValue = testY.get(i, 0);
+                boolean isCorrect = predictedLabel == actualValue;
 
-            if (predictedLabel == actualValue) {
-                correctPredictions++;
+                if (isCorrect) {
+                    correctPredictions++;
+                }
+
+                // Escreve o resultado de cada teste no arquivo
+                writer.printf("Índice: %-4d | Esperado: %.0f | Previsto: %d | Resultado: %s\n",
+                        i, actualValue, predictedLabel, isCorrect ? "CORRETO" : "INCORRETO");
             }
+
+            double accuracy = (double) correctPredictions / testY.rows();
+            System.out.printf("Model Accuracy: %.2f%%\n", accuracy * 100);
+            writer.println("------------------------------------");
+            writer.printf("\nAcurácia Final: %.2f%%\n", accuracy * 100);
+
+            // Assert que a acurácia seja maior que um certo limiar, por exemplo, 95%
+            assertTrue(accuracy > 0.95, "A acurácia do modelo deve ser maior que 95%");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        double accuracy = (double) correctPredictions / testY.rows();
-        System.out.printf("Model Accuracy: %.2f%%\n", accuracy * 100);
-
-        // Assert that the accuracy is above a certain threshold, for example, 95%
-        assertTrue(accuracy > 0.95, "Model accuracy should be greater than 95%");
     }
 
     @Test

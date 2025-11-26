@@ -84,6 +84,17 @@ public class MLPNXOR {
                         {1}});
 
 
+        //Train the MLP
+        MLP mlp = new MLP(topology,
+                new IDifferentiableFunction[]{
+                        new Sigmoid(),
+                        new Sigmoid(),},
+                -1);
+
+        // Treinar a rede
+        mlp.train(trX, trY, lr, epochs);
+
+
         //Get input and create evaluation Matrix
         Scanner sc = new Scanner(System.in);
         int n = sc.nextInt();
@@ -94,15 +105,6 @@ public class MLPNXOR {
         }
         Matrix evX = new Matrix(input);
 
-        //Train the MLP
-        MLP mlp = new MLP(topology,
-                new IDifferentiableFunction[]{
-                        new Sigmoid(),
-                        new Sigmoid(),},
-                -1);
-
-        // Treinar a rede
-        mlp.train(trX, trY, lr, epochs);
 
         // Imprimir os pesos finais, após o treino
         printWeightsAndBiases("\n--- Pesos Finais por Neurónio ---", mlp);
