@@ -24,7 +24,6 @@ class TestMLP23 {
     private static MLP mlp;
     private static Matrix testX;
     private static Matrix testY;
-    private static int seek = 4;
 
 
     /**
@@ -67,14 +66,14 @@ class TestMLP23 {
         loadData();
 
         // Get a pre-trained clone of the MLP model
-        MLP23 modelFactory = new MLP23(seek);
+        MLP23 modelFactory = new MLP23();
 
         // Caminhos para os seus arquivos de dados
         String[] inputPaths = {
+                "src/data/dataset_novos.csv",
                 "src/data/dataset_apenas_novos.csv",
-                //"src/data/dataset.csv",
         };
-        String[] outputPaths = {"src/data/labels.csv"};//,"src/data/labels.csv"};
+        String[] outputPaths = {"src/data/labels.csv","src/data/labels.csv"};
         modelFactory.train(inputPaths, outputPaths);
         mlp = modelFactory.getMLP();
     }

@@ -31,13 +31,9 @@ public class MLP23 {
 
     public MLP23() {
         this.mlp = new MLP(topology,
-               functions, -1);
+               functions, seek);
     }
 
-    public MLP23(int seed) {
-        this.mlp = new MLP(topology,
-                functions, seek);
-    }
 
     private List<double[]> loadData(String filePath) {
         List<double[]> data = new ArrayList<>();
@@ -106,7 +102,7 @@ public class MLP23 {
 
     public static void main(String[] args) {
         // Passa uma seed para garantir reprodutibilidade
-        MLP23 model = new MLP23(seek);
+        MLP23 model = new MLP23();
 
 
         String[] inputPaths = {

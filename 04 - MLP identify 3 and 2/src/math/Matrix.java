@@ -218,6 +218,11 @@ public class Matrix {
         return sb.toString();
     }
     
+    @Override
+    public Matrix clone() {
+        return new Matrix(this.data);
+    }
+
 
     //==============================================================
     //  Compare operations

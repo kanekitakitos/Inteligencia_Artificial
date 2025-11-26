@@ -15,6 +15,8 @@ public class MLP {
     private Matrix[] yp; //outputs for each layer
     private IDifferentiableFunction[] act; //activation functions for each layer
     private int numLayers;
+    private Matrix[] prevWUpdates; // For momentum
+    private Matrix[] prevBUpdates; // For momentum
 
     /* Create a Multi-Layer Perceptron with the given layer sizes.
      * layerSizes is an array where each element represents the number of neurons in that layer.
@@ -46,6 +48,13 @@ public class MLP {
             w[i] = Matrix.Rand(layerSizes[i], layerSizes[i + 1], rnd);
             b[i] = Matrix.Rand(1, layerSizes[i + 1], rnd); // One bias per neuron in the next layer
         }
+
+        this.prevWUpdates = new Matrix[numLayers - 1];
+        this.prevBUpdates = new Matrix[numLayers - 1];
+        for (int i = 0; i < numLayers - 1; i++) {
+            this.prevWUpdates[i] = new Matrix(w[i].rows(), w[i].cols());
+            this.prevBUpdates[i] = new Matrix(b[i].rows(), b[i].cols());
+        }
     }
 
 
@@ -62,7 +71,7 @@ public class MLP {
 
 
     // back propagation
-    private Matrix backPropagation(Matrix X, Matrix y, double lr) {
+    private Matrix backPropagation(Matrix X, Matrix y, double lr, double momentum) {
         Matrix Eout = null;
         Matrix e = null;
         Matrix delta = null;
@@ -84,12 +93,27 @@ public class MLP {
             // delta = e .* dy
             delta = e.mult(dy);
 
-            // w[l] += yp[l]^T * delta * lr
-            w[l] = w[l].add(yp[l].transpose().dot(delta).mult(lr));
-            // update biases
-            b[l] = b[l].addRowVector(delta.sumColumns().mult(lr));
+            // Calcula a atualização com momentum
+            Matrix wUpdate = yp[l].transpose().dot(delta).mult(lr).add(prevWUpdates[l].mult(momentum));
+            Matrix bUpdate = delta.sumColumns().mult(lr).add(prevBUpdates[l].mult(momentum));
+
+            w[l] = w[l].add(wUpdate);
+            b[l] = b[l].add(bUpdate);
+
+            // Salva as atualizações atuais para a próxima iteração
+            prevWUpdates[l] = wUpdate;
+            prevBUpdates[l] = bUpdate;
         }
         return Eout;
+    }
+
+    private Matrix[] cloneMatrices(Matrix[] matrices) {
+        if (matrices == null) return null;
+        Matrix[] clone = new Matrix[matrices.length];
+        for (int i = 0; i < matrices.length; i++) {
+            clone[i] = matrices[i].clone();
+        }
+        return clone;
     }
 
     /**
@@ -108,21 +132,19 @@ public class MLP {
         int nSamples = X.rows();
         int nValidationSamples = validationX.rows();
         double[][] mseHistory = new double[epochs][2]; // [0] para treino, [1] para validação
+        final double momentum = 0.9;
 
         double bestValidationMse = Double.POSITIVE_INFINITY;
         int epochsWithoutImprovement = 0;
 
-        // Guarda os melhores pesos e biases encontrados
         Matrix[] bestW = null;
         Matrix[] bestB = null;
 
         for (int epoch = 0; epoch < epochs; epoch++) {
-            // Treino
             predict(X);
-            Matrix trainError = backPropagation(X, y, learningRate);
+            Matrix trainError = backPropagation(X, y, learningRate, momentum);
             double trainMse = trainError.dot(trainError.transpose()).get(0, 0) / nSamples;
 
-            // Validação
             Matrix validationPrediction = predict(validationX);
             Matrix validationError = validationY.sub(validationPrediction);
             double validationMse = validationError.dot(validationError.transpose()).get(0, 0) / nValidationSamples;
@@ -130,65 +152,42 @@ public class MLP {
             mseHistory[epoch][0] = trainMse;
             mseHistory[epoch][1] = validationMse;
 
-            System.out.printf("Epoch %d/%d, Train MSE: %.10f, Validation MSE: %.10f\n", epoch + 1, epochs, trainMse, validationMse);
+            if ((epoch + 1) % 100 == 0)
+                System.out.printf("Epoch %d/%d, Train MSE: %.10f, Validation MSE: %.10f\n", epoch + 1, epochs, trainMse, validationMse);
 
-            // Lógica de Early Stopping
             if (validationMse < bestValidationMse) {
                 bestValidationMse = validationMse;
                 epochsWithoutImprovement = 0;
-                // Salva o melhor modelo
-                bestW = this.getWeights();
-                bestB = this.getBiases();
+                bestW = cloneMatrices(this.w);
+                bestB = cloneMatrices(this.b);
             } else {
                 epochsWithoutImprovement++;
             }
 
             if (epochsWithoutImprovement >= patience) {
                 System.out.printf("\nEarly stopping at epoch %d. Best validation MSE: %.10f\n", epoch + 1, bestValidationMse);
-                this.setWeights(bestW); // Restaura os melhores pesos
-                this.setBiases(bestB);   // Restaura os melhores biases
-                return mseHistory;
+                this.setWeights(bestW);
+                this.setBiases(bestB);
+                // Retorna apenas a parte do histórico que foi preenchida
+                return java.util.Arrays.copyOf(mseHistory, epoch + 1);
             }
         }
+        this.setWeights(bestW);
+        this.setBiases(bestB);
         return mseHistory;
     }
 
     public double[] train(Matrix X, Matrix y, double learningRate, int epochs) {
         int nSamples = X.rows();
         double[] mse = new double[epochs];
-        double currentLearningRate = learningRate;
-        final double originalLearningRate = learningRate;
-        final int stagnationPatience = 10; // Nº de épocas para esperar antes de ativar o impulso
-        final int boostDuration = 10;       // Nº de épocas que o impulso vai durar
-        int stagnationCounter = 0;
-        int boostCounter = 0;
+        final double momentum = 0.7; // Valor comum para momentum
 
         for (int epoch=0; epoch < epochs; epoch++) {
             predict(X);
             //backward propagation
-            Matrix e = backPropagation(X, y, currentLearningRate);
+            Matrix e = backPropagation(X, y, learningRate, momentum);
             //mse
             mse[epoch] = e.dot(e.transpose()).get(0, 0) / nSamples;
-
-            // Lógica para sair de mínimos locais
-            if (epoch > 0 && mse[epoch] == mse[epoch-1]) {
-                stagnationCounter++;
-            } else {
-                stagnationCounter = 0; // Reset se o MSE mudar
-            }
-
-            if (boostCounter > 0) {
-                boostCounter--;
-                if (boostCounter == 0) {
-                    currentLearningRate = originalLearningRate; // Restaura o lr
-                    //System.out.printf("\n--- FIM DO IMPULSO! Taxa de aprendizagem restaurada para %.5f ---\n", currentLearningRate);
-                }
-            } else if (stagnationCounter >= stagnationPatience) {
-                currentLearningRate *= 20; // Aumenta o lr
-                boostCounter = boostDuration; // Ativa o contador do impulso
-                //System.out.printf("\n--- ESTAGNAÇÃO DETETADA! Impulsionando a taxa de aprendizagem para %.5f por %d épocas ---\n", currentLearningRate, boostDuration);
-                stagnationCounter = 0; // Reset para não reativar imediatamente
-            }
 
             // Print progress
             if ((epoch + 1) % 50 == 0) {
@@ -202,13 +201,17 @@ public class MLP {
      * Returns the learned weight matrices for each layer.
      * @return An array of Matrix objects representing the weights.
      */
-    public Matrix[] getWeights() { return w; }
+    public Matrix[] getWeights() {
+        return cloneMatrices(this.w);
+    }
 
     /**
      * Returns the learned bias values for each layer.
      * @return An array of doubles representing the biases.
      */
-    public Matrix[] getBiases() { return b; }
+    public Matrix[] getBiases() {
+        return cloneMatrices(this.b);
+    }
 
     /**
      * Sets the weight matrices for each layer.
@@ -231,7 +234,7 @@ public class MLP {
                         ", Got: " + newWeights[i].rows() + "x" + newWeights[i].cols());
             }
         }
-        this.w = newWeights;
+        this.w = cloneMatrices(newWeights);
     }
 
     public void setBiases(Matrix[] newBiases) {
@@ -245,7 +248,7 @@ public class MLP {
                         ", Got: " + newBiases[i].rows() + "x" + newBiases[i].cols());
             }
         }
-        this.b = newBiases;
+        this.b = cloneMatrices(newBiases);
     }
 
     // Overload for compatibility with single-neuron test case
