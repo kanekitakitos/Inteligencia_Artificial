@@ -63,46 +63,135 @@ public class MLP {
 
     // back propagation
     private Matrix backPropagation(Matrix X, Matrix y, double lr) {
+        Matrix Eout = null;
         Matrix e = null;
         Matrix delta = null;
-    
+
         // back propagation using generalised delta rule
         for (int l = numLayers - 2; l >= 0; l--) {
-            if (l == numLayers - 2) // output layer
-                e = y.sub(yp[l + 1]); // e = y – yp[l+1]
-            else { // propagate error
+            if (l == numLayers - 2) { // output layer
+                Eout = e = y.sub(yp[l + 1]); // e = y – yp[l+1]
+            } else { // propagate error
                 // e = delta * w[l+1]^T
                 e = delta.dot(w[l + 1].transpose());
             }
-    
+
             // dy = yp[l+1] .* (1-yp[l+1])
             // Note: to compute dy use Sigmoid class derivative
             // in a similar way as in predict()
             Matrix dy = yp[l + 1].apply(act[l].derivative());
-    
+
             // delta = e .* dy
             delta = e.mult(dy);
-    
+
             // w[l] += yp[l]^T * delta * lr
             w[l] = w[l].add(yp[l].transpose().dot(delta).mult(lr));
             // update biases
             b[l] = b[l].addRowVector(delta.sumColumns().mult(lr));
         }
-        return e;
+        return Eout;
+    }
+
+    /**
+     * Treina a rede com early stopping para evitar overfitting.
+     *
+     * @param X Matriz de treino (entradas).
+     * @param y Matriz de treino (saídas esperadas).
+     * @param validationX Matriz de validação (entradas).
+     * @param validationY Matriz de validação (saídas esperadas).
+     * @param learningRate A taxa de aprendizagem.
+     * @param epochs O número máximo de épocas.
+     * @param patience O número de épocas a esperar sem melhoria antes de parar.
+     * @return Array com a evolução do erro (MSE) de treino e validação.
+     */
+    public double[][] train(Matrix X, Matrix y, Matrix validationX, Matrix validationY, double learningRate, int epochs, int patience) {
+        int nSamples = X.rows();
+        int nValidationSamples = validationX.rows();
+        double[][] mseHistory = new double[epochs][2]; // [0] para treino, [1] para validação
+
+        double bestValidationMse = Double.POSITIVE_INFINITY;
+        int epochsWithoutImprovement = 0;
+
+        // Guarda os melhores pesos e biases encontrados
+        Matrix[] bestW = null;
+        Matrix[] bestB = null;
+
+        for (int epoch = 0; epoch < epochs; epoch++) {
+            // Treino
+            predict(X);
+            Matrix trainError = backPropagation(X, y, learningRate);
+            double trainMse = trainError.dot(trainError.transpose()).get(0, 0) / nSamples;
+
+            // Validação
+            Matrix validationPrediction = predict(validationX);
+            Matrix validationError = validationY.sub(validationPrediction);
+            double validationMse = validationError.dot(validationError.transpose()).get(0, 0) / nValidationSamples;
+
+            mseHistory[epoch][0] = trainMse;
+            mseHistory[epoch][1] = validationMse;
+
+            System.out.printf("Epoch %d/%d, Train MSE: %.10f, Validation MSE: %.10f\n", epoch + 1, epochs, trainMse, validationMse);
+
+            // Lógica de Early Stopping
+            if (validationMse < bestValidationMse) {
+                bestValidationMse = validationMse;
+                epochsWithoutImprovement = 0;
+                // Salva o melhor modelo
+                bestW = this.getWeights();
+                bestB = this.getBiases();
+            } else {
+                epochsWithoutImprovement++;
+            }
+
+            if (epochsWithoutImprovement >= patience) {
+                System.out.printf("\nEarly stopping at epoch %d. Best validation MSE: %.10f\n", epoch + 1, bestValidationMse);
+                this.setWeights(bestW); // Restaura os melhores pesos
+                this.setBiases(bestB);   // Restaura os melhores biases
+                return mseHistory;
+            }
+        }
+        return mseHistory;
     }
 
     public double[] train(Matrix X, Matrix y, double learningRate, int epochs) {
         int nSamples = X.rows();
         double[] mse = new double[epochs];
+        double currentLearningRate = learningRate;
+        final double originalLearningRate = learningRate;
+        final int stagnationPatience = 10; // Nº de épocas para esperar antes de ativar o impulso
+        final int boostDuration = 10;       // Nº de épocas que o impulso vai durar
+        int stagnationCounter = 0;
+        int boostCounter = 0;
+
         for (int epoch=0; epoch < epochs; epoch++) {
             predict(X);
             //backward propagation
-            Matrix e = backPropagation(X, y, learningRate);
+            Matrix e = backPropagation(X, y, currentLearningRate);
             //mse
             mse[epoch] = e.dot(e.transpose()).get(0, 0) / nSamples;
 
+            // Lógica para sair de mínimos locais
+            if (epoch > 0 && mse[epoch] == mse[epoch-1]) {
+                stagnationCounter++;
+            } else {
+                stagnationCounter = 0; // Reset se o MSE mudar
+            }
+
+            if (boostCounter > 0) {
+                boostCounter--;
+                if (boostCounter == 0) {
+                    currentLearningRate = originalLearningRate; // Restaura o lr
+                    //System.out.printf("\n--- FIM DO IMPULSO! Taxa de aprendizagem restaurada para %.5f ---\n", currentLearningRate);
+                }
+            } else if (stagnationCounter >= stagnationPatience) {
+                currentLearningRate *= 20; // Aumenta o lr
+                boostCounter = boostDuration; // Ativa o contador do impulso
+                //System.out.printf("\n--- ESTAGNAÇÃO DETETADA! Impulsionando a taxa de aprendizagem para %.5f por %d épocas ---\n", currentLearningRate, boostDuration);
+                stagnationCounter = 0; // Reset para não reativar imediatamente
+            }
+
             // Print progress
-            if ((epoch + 1) % (epochs / 100) == 0) {
+            if ((epoch + 1) % 50 == 0) {
                 System.out.printf("Epoch %d/%d, MSE: %.50f\n", epoch + 1, epochs, mse[epoch]);
             }
         }
@@ -175,7 +264,7 @@ public class MLP {
             throw new IllegalArgumentException("Invalid number of biases. Expected: " + this.b.length + ", Got: " + newBiases.length);
         }
     }
-    
+
     /**
      * Creates a deep copy of the current MLP instance.
      * The new MLP will have the same topology, activation functions, weights, and biases,

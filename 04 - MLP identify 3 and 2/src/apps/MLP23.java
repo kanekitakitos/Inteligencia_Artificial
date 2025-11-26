@@ -14,13 +14,12 @@ import java.util.Scanner;
 import neural.MLP;
 
 public class MLP23 {
-    // 1. AJUSTE DO LEARNING RATE
-    // Como a MLP do professor soma os erros sem média, o LR tem de ser muito baixo
-    private double lr = 0.001;
 
-    private int epochs = 10000; // Podes precisar de mais épocas com LR baixo
-    private int[] topology = {400,2, 1};
-    private IDifferentiableFunction[] functions = {new Sigmoid(), new Sigmoid()};
+    private double lr = 0.006;
+
+    private int epochs = 5000;
+    private int[] topology = {400,4, 1};
+    private IDifferentiableFunction[] functions = {new Sigmoid(),new Sigmoid(), new Sigmoid()};
     private MLP mlp;
     private static int seek = 4;
 
@@ -48,7 +47,6 @@ public class MLP23 {
                 String[] stringValues = line.split(",");
                 double[] doubleValues = new double[stringValues.length];
                 for (int i = 0; i < stringValues.length; i++) {
-                    // CORREÇÃO: Normalizar os dados de treino dividindo por 255
                     doubleValues[i] = Double.parseDouble(stringValues[i]);
                 }
                 data.add(doubleValues);
@@ -85,11 +83,8 @@ public class MLP23 {
             }
         }
 
-        // 3. OBRIGATÓRIO: DESCOMENTAR O SHUFFLE
-        // Sem isto a rede não aprende nada útil
         Collections.shuffle(combinedData, new Random(seek));
         Collections.shuffle(combinedData, new Random(seek));
-
         double[][] shuffledInputs = new double[combinedData.size()][];
         double[][] shuffledOutputs = new double[combinedData.size()][];
         for (int i = 0; i < combinedData.size(); i++) {
@@ -121,7 +116,7 @@ public class MLP23 {
         String[] outputPaths = {"src/data/labels.csv"};
 
         model.train(inputPaths, outputPaths);
-        testar(model);
+        //testar(model);
     }
 
     public static void testar(MLP23 model) {
@@ -153,7 +148,6 @@ public class MLP23 {
 
             double[][] testInput = new double[1][400];
             for (int j = 0; j < stringValues.length; j++) {
-                // 4. NORMALIZAÇÃO NO TESTE (Mantém isto, estava correto na tua última versão)
                 testInput[0][j] = Double.parseDouble(stringValues[j].trim()) ;
             }
 
