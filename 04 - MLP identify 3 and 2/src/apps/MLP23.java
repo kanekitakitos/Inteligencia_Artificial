@@ -86,7 +86,7 @@ public class MLP23 {
         }
 
         //Collections.shuffle(combinedData, new Random(seek));
-        //Collections.shuffle(combinedData, new Random(seek));
+        Collections.shuffle(combinedData, new Random(seek));
         double[][] shuffledInputs = new double[combinedData.size()][];
         double[][] shuffledOutputs = new double[combinedData.size()][];
         for (int i = 0; i < combinedData.size(); i++) {
