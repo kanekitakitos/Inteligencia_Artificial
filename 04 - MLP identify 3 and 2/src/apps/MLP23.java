@@ -18,7 +18,7 @@ public class MLP23 {
     private double lr = 0.006;
 
     private int epochs = 5000;
-    private int[] topology = {400,4, 1};
+    private int[] topology = {400,2, 1};
     private IDifferentiableFunction[] functions = {new Sigmoid(),new Sigmoid(), new Sigmoid()};
     private MLP mlp;
     private static int seek = 4;
