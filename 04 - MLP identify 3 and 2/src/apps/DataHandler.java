@@ -67,7 +67,7 @@ public class DataHandler {
         List<DataPoint> allData = loadAndProcess(allInputPaths, allOutputPaths);
 
         // 2. Shuffle the entire dataset randomly
-        Collections.shuffle(allData, new Random(seed));
+        //Collections.shuffle(allData, new Random(seed));
 
         // 3. Split the data into training and validation sets
         int validationSize = (int) (allData.size() * validationSplit);

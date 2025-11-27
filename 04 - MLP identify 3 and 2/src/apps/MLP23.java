@@ -11,9 +11,9 @@ import neural.MLP;
 
 public class MLP23 {
 
-    private double lr = 0.0229;
+    private double lr = 0.022971;
 
-    private int epochs = 10000;
+    private int epochs = 15000;
     private int[] topology = {400,1, 1};
     private IDifferentiableFunction[] functions = {new Sigmoid(), new Sigmoid()};
     private MLP mlp;
