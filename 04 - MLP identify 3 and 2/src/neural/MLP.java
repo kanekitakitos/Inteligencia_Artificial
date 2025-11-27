@@ -129,7 +129,7 @@ public class MLP {
             mse[epoch] = e.dot(e.transpose()).get(0, 0) / nSamples;
 
             // Print progress
-            if ((epoch + 1) % 100 == 0) {
+            if ((epoch + 1) % 50 == 0) {
                 System.out.printf("Epoch %d/%d, MSE: %.50f\n", epoch + 1, epochs, mse[epoch]);
             }
         }

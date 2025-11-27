@@ -15,7 +15,7 @@ import neural.MLP;
 
 public class MLP23 {
 
-    private double lr = 0.006;
+    private double lr = 0.01;
 
     private int epochs = 15000;
     private int[] topology = {400,1, 1};

@@ -72,10 +72,10 @@ class TestMLP23 {
         String[] inputPaths = {
                 "src/data/dataset_novos.csv",
                 "src/data/dataset.csv",
-                //"src/data/dataset_apenas_novos.csv",
+                "src/data/dataset_apenas_novos.csv",
                 "src/data/dataset_apenas_novos2.csv",
         };
-        String[] outputPaths = {"src/data/labels.csv","src/data/labels.csv","src/data/labels.csv"};
+        String[] outputPaths = {"src/data/labels.csv","src/data/labels.csv","src/data/labels.csv","src/data/labels.csv"};
         modelFactory.train(inputPaths, outputPaths);
         mlp = modelFactory.getMLP();
     }
