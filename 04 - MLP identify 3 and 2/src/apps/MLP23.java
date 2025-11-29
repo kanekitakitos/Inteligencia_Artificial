@@ -75,8 +75,8 @@ public class MLP23 {
 
     private int epochs = 5000;
     private int epocht = 5;
-    private double momentum = 0.7;
-    private int[] topology = {400,1, 1};
+    private double momentum = 0.6;
+    private int[] topology = {400,2, 1};
     private IDifferentiableFunction[] functions = {new Sigmoid(), new Sigmoid()};
     private MLP mlp;
     private static final int SEED = 4;
