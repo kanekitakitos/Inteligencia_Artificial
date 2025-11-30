@@ -71,15 +71,15 @@ import neural.MLP;
  */
 public class MLP23 {
 
-    private double lr = 0.0221;
+    private double lr = 0.005;
 
     private int epochs = 100000;
     private int internalEpochs = 1;
-    private double momentum = 0.80;
+    private double momentum = 0.90;
     private int[] topology = {400,2, 1};
     private IDifferentiableFunction[] functions = {new Sigmoid(), new Sigmoid()};
     private MLP mlp;
-    private static final int SEED = 8; // 2;4;5 5:00 ;7;8 4:21 ;16 4:17
+    private static final int SEED = 4; // 2;4;5 5:00 ;7;8 4:21 ;16 4:17
 
 
     /**
@@ -91,8 +91,17 @@ public class MLP23 {
         this.mlp = new MLP(topology, functions, SEED);
     }
 
+    public MLP23(int[] topology, IDifferentiableFunction[] functions, double lr, double momentum, int epochs) {
+        this.topology = topology;
+        this.functions = functions;
+        this.lr = lr;
+        this.momentum = momentum;
+        this.epochs = epochs;
+        this.mlp = new MLP(this.topology, this.functions, SEED);
+    }
 
-    public void train(String[] inputPaths, String[] outputPaths) {
+
+    public double train(String[] inputPaths, String[] outputPaths) {
         // O construtor do DataHandler aqui está a usar uma versão depreciada.
         // Para um código mais robusto, seria ideal refatorar para usar o construtor que aceita uma fração de validação.
         // Exemplo: new DataHandler(allInputs, allOutputs, 0.2, SEED);
@@ -139,7 +148,7 @@ public class MLP23 {
                         double currentValidationError = validationFuture.get(); // Obtém o resultado do cálculo anterior
                         // Imprime o erro de validação (MSE) a cada 100 épocas para acompanhar o progresso.
                         if ((epoch - 10) > 0 && (epoch - 10) % 100 == 0) {
-                            System.out.printf("Época: %-5d | LR: %.6f | Erro de Validação (MSE): %.6f\n", epoch - 10, this.lr, currentValidationError);
+            //                //System.out.printf("Época: %-5d | LR: %.6f | Erro de Validação (MSE): %.6f\n", epoch - 10, this.lr, currentValidationError);
                         }
 
                         if (currentValidationError < bestValidationError) {
@@ -170,7 +179,7 @@ public class MLP23 {
 
                 // Condição de paragem se a learning rate ficar muito pequena
                 if (this.lr < 1e-5) {
-                    System.out.println("Learning rate muito baixa. A parar o treino.");
+                    //System.out.println("Learning rate muito baixa. A parar o treino.");
                     break;
                 }
                 // 3. Condição de Early Stopping
@@ -190,6 +199,7 @@ public class MLP23 {
             this.mlp = bestMlp;
             //System.out.printf("\nMelhor modelo restaurado (com erro de validação de: %.6f)\n", bestValidationError);
         }
+        return bestValidationError;
     }
 
     /**

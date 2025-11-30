@@ -5,13 +5,9 @@ import math.Matrix;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.Random;
 
 /**
  * A comprehensive utility class for managing and preprocessing datasets for machine learning models.
@@ -160,8 +156,16 @@ public class DataHandler {
                     return IntStream.range(0, inputs.size())
                             .mapToObj(j -> {
                                 double[] input = inputs.get(j);
-                                // Normaliza o input para o intervalo [0, 1] de forma mais eficiente.
-                                for (int k = 0; k < input.length; k++) input[k] /= 255.0;
+
+                                // Production-Ready Check: Only normalize if data appears to be in the [0, 255] pixel range.
+                                // This prevents re-normalizing already normalized data (e.g., from borroso.csv).
+                                boolean needsNormalization = Arrays.stream(input).anyMatch(val -> val > 1.0);
+                                if (needsNormalization) {
+                                    for (int k = 0; k < input.length; k++) {
+                                        input[k] /= 255.0;
+                                    }
+                                }
+
                                 double[] output = outputs.get(j);
                                 output[0] = (output[0] == 3.0) ? 1.0 : 0.0; // Converte 3.0 para 1.0, e o resto para 0.0
                                 return new DataPoint(input, output);
@@ -222,7 +226,14 @@ public class DataHandler {
         List<DataPoint> testData = IntStream.range(0, inputs.size()).parallel()
                 .mapToObj(i -> {
                     double[] input = inputs.get(i);
-                    for (int k = 0; k < input.length; k++) input[k] /= 255.0; // Normaliza
+                    // Production-Ready Check: Only normalize if data appears to be in the [0, 255] pixel range.
+                    boolean needsNormalization = Arrays.stream(input).anyMatch(val -> val > 1.0);
+                    if (needsNormalization) {
+                        for (int k = 0; k < input.length; k++) {
+                            input[k] /= 255.0;
+                        }
+                    }
+
                     double[] output = outputs.get(i);
                     output[0] = (output[0] == 3.0) ? 1.0 : 0.0; // Converte labels
                     return new DataPoint(input, output);
