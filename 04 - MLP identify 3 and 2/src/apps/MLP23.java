@@ -71,15 +71,16 @@ import neural.MLP;
  */
 public class MLP23 {
 
-    private double lr = 0.0225;
+    private double lr = 0.0221;
 
-    private int epochs = 80000;
+    private int epochs = 100000;
     private int internalEpochs = 1;
     private double momentum = 0.80;
-    private int[] topology = {400,1, 1};
+    private int[] topology = {400,2, 1};
     private IDifferentiableFunction[] functions = {new Sigmoid(), new Sigmoid()};
     private MLP mlp;
-    private static final int SEED = 4; //
+    private static final int SEED = 8; // 2;4;5 5:00 ;7;8 4:21 ;16 4:17
+
 
     /**
      * Constructs the MLP trainer with a predefined network topology and activation functions.
@@ -124,7 +125,7 @@ public class MLP23 {
         double bestValidationError = Double.POSITIVE_INFINITY;
         MLP bestMlp = null; // Para guardar o melhor modelo
         int epochsSinceLastErrorIncrease = 0;
-        final int lrPatience = 20; // Paciência para reduzir a learning rate
+        final int lrPatience = 10; // Paciência para reduzir a learning rate
         final int earlyStoppingPatience = 50; // Paciência para parar o treino
 
         for (int epoch = 1; epoch <= this.epochs; epoch++) {
@@ -152,8 +153,7 @@ public class MLP23 {
 
                         // Se o erro de validação não melhora, reduz o LR
                         if (epochsSinceLastErrorIncrease > 0 && epochsSinceLastErrorIncrease % (lrPatience / 10) == 0) {
-                            this.lr *= 0.9; // Redução mais suave da learning rate para evitar saltos
-                            //this.momentum *= 0.9; // Reduz também o momentum para refinar a convergência
+                            this.lr *= 0.90; // Redução mais suave da learning rate para evitar saltos
                             epochsSinceLastErrorIncrease = 0; // Reset do contador
                         }
                     } catch (Exception e) {
