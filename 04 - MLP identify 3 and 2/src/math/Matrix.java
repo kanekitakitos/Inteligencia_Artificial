@@ -2,6 +2,7 @@ package math;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.io.Serializable;
 import java.util.Random;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -11,7 +12,7 @@ import java.util.stream.IntStream;
  * @author hdaniel@ualg.pt, Brandon Mejia
  * @version 202511052002
  */
-public class Matrix {
+public class Matrix implements Serializable {
 
     private double[][] data;
     private int rows, cols;

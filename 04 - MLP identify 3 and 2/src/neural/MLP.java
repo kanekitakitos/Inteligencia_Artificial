@@ -1,6 +1,7 @@
 package neural;
 
 import math.Matrix;
+import java.io.Serializable;
 import neural.activation.IDifferentiableFunction;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
@@ -12,15 +13,15 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author hdaniel@ualg.pt, Brandon Mejia
  * @version 202511052038
  */
-public class MLP {
+public class MLP implements Serializable {
 
     private Matrix[] w;  //weights for each layer
     private Matrix[] b;  //biases for each layer (one per neuron)
-    private Matrix[] yp; //outputs for each layer
+    private transient Matrix[] yp; //outputs for each layer (transient)
     private IDifferentiableFunction[] act; //activation functions for each layer
     private int numLayers;
-    private Matrix[] prevWUpdates; // For momentum
-    private Matrix[] prevBUpdates; // For momentum
+    private transient Matrix[] prevWUpdates; // For momentum (transient)
+    private transient Matrix[] prevBUpdates; // For momentum (transient)
 
     /* Create a Multi-Layer Perceptron with the given layer sizes.
      * layerSizes is an array where each element represents the number of neurons in that layer.
@@ -42,23 +43,8 @@ public class MLP {
         //create output storage for each layer but the input layer
         yp = new Matrix[numLayers];
 
-        //create weights and biases for each layer
-        //each row in w[l] represents the weights that are input
-        w = new Matrix[numLayers - 1];
-        b = new Matrix[numLayers - 1];
-
-        Random rnd = new Random(seed);
-        for (int i = 0; i < numLayers - 1; i++) {
-            w[i] = Matrix.Rand(layerSizes[i], layerSizes[i + 1], rnd);
-            b[i] = Matrix.Rand(1, layerSizes[i + 1], rnd); // One bias per neuron in the next layer
-        }
-
-        this.prevWUpdates = new Matrix[numLayers - 1];
-        this.prevBUpdates = new Matrix[numLayers - 1];
-        for (int i = 0; i < numLayers - 1; i++) {
-            this.prevWUpdates[i] = new Matrix(w[i].rows(), w[i].cols());
-            this.prevBUpdates[i] = new Matrix(b[i].rows(), b[i].cols());
-        }
+        initializeMatrices(layerSizes, seed);
+        initializeMomentum();
     }
 
 
@@ -68,6 +54,10 @@ public class MLP {
     // yp[l+1] = Sigmoid( yp[l] * w[l]+b[l] )
     public Matrix predict(Matrix X)
     {
+        // Re-initialize transient fields if they are null (e.g., after deserialization)
+        if (yp == null) {
+            yp = new Matrix[numLayers];
+        }
         yp[0] = X;
         for (int l = 0; l < numLayers - 1; l++)
             yp[l + 1] = yp[l].dot(w[l]).addRowVector(b[l]).apply(act[l].fnc());
@@ -80,6 +70,11 @@ public class MLP {
         Matrix Eout = null;
         Matrix e = null;
         Matrix delta = null;
+
+        // Re-initialize transient fields if they are null
+        if (prevWUpdates == null || prevBUpdates == null) {
+            initializeMomentum();
+        }
 
         // back propagation using generalised delta rule
         for (int l = numLayers - 2; l >= 0; l--) {
@@ -110,6 +105,28 @@ public class MLP {
             prevBUpdates[l] = bUpdate;
         }
         return Eout;
+    }
+
+    private void initializeMatrices(int[] layerSizes, int seed) {
+        w = new Matrix[numLayers - 1];
+        b = new Matrix[numLayers - 1];
+
+        Random rnd = new Random(seed);
+        for (int i = 0; i < numLayers - 1; i++) {
+            w[i] = Matrix.Rand(layerSizes[i], layerSizes[i + 1], rnd);
+            b[i] = Matrix.Rand(1, layerSizes[i + 1], rnd); // One bias per neuron in the next layer
+        }
+    }
+
+    private void initializeMomentum() {
+        if (w == null) return; // Cannot initialize if weights are not set
+
+        this.prevWUpdates = new Matrix[numLayers - 1];
+        this.prevBUpdates = new Matrix[numLayers - 1];
+        for (int i = 0; i < numLayers - 1; i++) {
+            this.prevWUpdates[i] = new Matrix(w[i].rows(), w[i].cols());
+            this.prevBUpdates[i] = new Matrix(b[i].rows(), b[i].cols());
+        }
     }
 
     private Matrix[] cloneMatrices(Matrix[] matrices) {
@@ -329,5 +346,11 @@ public class MLP {
         clonedMlp.setBiases(this.getBiases());
 
         return clonedMlp;
+    }
+
+
+    public void saveModel(String modelPath)
+    {
+        ModelUtils.saveModel(this,modelPath);
     }
 }

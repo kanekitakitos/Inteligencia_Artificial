@@ -148,7 +148,7 @@ public class MLPNXOR {
 
         // Usa setters para aplicar os pesos e bias calculados manualmente
         mlp.setWeights(new Matrix[]{weights});
-        mlp.setBiases(new double[]{bias});
+        //mlp.setBiases(new double[]{bias});
 
         System.out.println("Testando uma MLP como um único neurónio para a lógica y = x2 (padrão 0101):");
         System.out.println("Pesos: w1=0.0, w2=1.0, Bias: -0.5");
