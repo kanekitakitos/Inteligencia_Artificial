@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.Scanner;
 
 /**
  * The main entry point for the MLP-based digit classification program, designed for automated evaluation.
@@ -49,16 +50,16 @@ public class P4 {
             return;
         }
 
-        // 2. Read multiple lines from the console and predict each one.
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-            String line;
-            while ((line = reader.readLine()) != null && !line.isEmpty()) {
+        try (Scanner scanner = new Scanner(System.in)) {
+            int n = Integer.parseInt(scanner.nextLine()); // Read the number of test cases
+            for (int i = 0; i < n; i++) {
+                String line = scanner.nextLine();
                 double[] inputValues = Arrays.stream(line.split(","))
                         .map(String::trim)
                         .mapToDouble(Double::parseDouble)
                         .toArray();
 
-                Matrix inputMatrix = new Matrix(new double[][]{inputValues});
+                Matrix inputMatrix = new Matrix(new double[][] { inputValues });
                 Matrix predictionMatrix = mlp.predict(inputMatrix);
                 long predictedLabel = Math.round(predictionMatrix.get(0, 0));
                 System.out.println(predictedLabel == 0 ? 2 : 3);
