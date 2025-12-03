@@ -7,7 +7,9 @@ import neural.activation.IDifferentiableFunction;
 import neural.activation.Sigmoid;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -23,7 +25,7 @@ import java.util.Scanner;
  * </p>
  *
  * @author Brandon Mejia
- * @version 2025-12-03
+ * @version 2025-12-02
  */
 public class P4 {
 
@@ -34,51 +36,67 @@ public class P4 {
      * @throws IOException If an I/O error occurs while reading from the console.
      */
     public static void main(String[] args) throws IOException {
-        String modelPath = "src/models/digit_classifier_v99_dataset_seed1.ser";
-        //trainMLP23(modelPath);
-        MLP mlp = ModelUtils.loadModel(modelPath);
+        // 1. Create and train the model once.
+        String path = "src/models/mlp23vSeed1Dataset1Neuron.model";
+        //trainMLP23(path);
+        MLP mlp = ModelUtils.loadModel(path);
 
-        if (mlp == null) {
-            System.err.println("ERRO: O modelo MLP não foi carregado. Encerrando o programa.");
-            return;
-        }
-
+        // 2. Ler todas as 'm' amostras do input e armazená-las.
+        List<double[]> allInputs = new ArrayList<>();
         try (Scanner scanner = new Scanner(System.in)) {
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                if (line.trim().isEmpty()) {
-                    continue;
-                }
-                
+            String line;
+            while (scanner.hasNextLine() && !(line = scanner.nextLine()).trim().isEmpty()) {
                 double[] inputValues = Arrays.stream(line.split(","))
                         .map(String::trim)
                         .mapToDouble(Double::parseDouble)
                         .toArray();
+                allInputs.add(inputValues);
+            }
+        }
 
-                Matrix inputMatrix = new Matrix(new double[][]{inputValues});
-                Matrix predictionMatrix = mlp.predict(inputMatrix);
-                long predictedLabel = Math.round(predictionMatrix.get(0, 0));
+        // 3. Construir uma única matriz (m x 400) e fazer a predição em lote.
+        if (!allInputs.isEmpty()) {
+            // Converte a lista de arrays para uma matriz 2D (m x 400).
+            // O argumento define o tipo do array resultante. O Java aloca o tamanho correto.
+            int numRows = allInputs.size();
+            int numCols = 400;
+            double[][] inputArray = new double[numRows][numCols];
+            for (int i = 0; i < numRows; i++) {
+                // Garante que cada linha tenha exatamente 400 colunas, copiando os valores.
+                System.arraycopy(allInputs.get(i), 0, inputArray[i], 0, Math.min(allInputs.get(i).length, numCols));
+            }
+            Matrix inputMatrix = new Matrix(inputArray);
+            Matrix predictions = mlp.predict(inputMatrix);
+
+            // 4. Imprimir cada resultado numa nova linha.
+            for (int i = 0; i < predictions.rows(); i++) {
+                long predictedLabel = Math.round(predictions.get(i, 0));
                 System.out.println(predictedLabel == 0 ? 2 : 3);
             }
         }
     }
 
-    public static void trainMLP23(String modelPath) {
+
+    public static void trainMLP23(String modelPath)
+    {
         double lr = 0.01;
         int epochs = 20000;
         double momentum = 0.9;
         int SEED = 1;
         IDifferentiableFunction[] functions = {new Sigmoid(), new Sigmoid()};
-        int[] topology = {400, 1, 1};
+        int[] topology = {400,1, 1};
         MLP mlp = new MLP(topology, functions, SEED);
         DataHandler dataManager = new DataHandler(SEED);
+
 
         Matrix trainInputs = dataManager.getTrainInputs();
         Matrix trainOutputs = dataManager.getTrainOutputs();
         Matrix valInputs = dataManager.getTestInputs();
         Matrix valOutputs = dataManager.getTestOutputs();
 
-        mlp.train(trainInputs, trainOutputs, valInputs, valOutputs, lr, epochs, momentum);
+
+
+        mlp.train(trainInputs, trainOutputs, valInputs, valOutputs, lr,epochs,momentum);
         mlp.saveModel(modelPath);
     }
 }
