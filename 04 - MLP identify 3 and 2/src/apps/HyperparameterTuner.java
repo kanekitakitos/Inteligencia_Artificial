@@ -1,5 +1,4 @@
 package apps;
-import neural.GpuMLP;
 import neural.activation.IDifferentiableFunction;
 import neural.activation.*;
 
@@ -112,22 +111,21 @@ public class HyperparameterTuner {
      */
     private static final boolean USE_GPU = false;
 
-    private final int SEED = 8;
-
-    private final int epochs =20000;
+    private final int SEED = MLP23.SEED;
+    private final int epochs = 20000;
 
     // --- Hiperparámetros para a busca ---
-    private final double[] learningRates = {0.01,0.009,0.011,
-                                        0.005, 0.001,0.002,0.0225,0.0221,0.003
-                                        ,0.0005,0.0001,0.0002
+    private final double[] learningRates = {0.01,
+                                        0.005, 0.001,0.002,0.0225,0.02,0.003
+                                        ,0.0005,0.0001,0.0002,0.00005,0.00001
     };
 
-    private final double[] momentums = {0.6,0.7, 0.8, 0.9 , 0.95, 0.99
+    private final double[] momentums = {0.7, 0.8, 0.9 , 0.95, 0.99 , 1
     };
 
     private final int[][] topologies = {
             {400, 1, 1},
-            //{400, 2, 1},
+            {400, 2, 1},
             //{400, 4, 1}
 
     };
@@ -138,28 +136,21 @@ public class HyperparameterTuner {
     };
 
     /**
-     * A simple data class to store the results of a single training trial.
-     */
-    private static class TuningResult implements Comparable<TuningResult> {
-        final String paramsDescription;
-        final double accuracy;
-
-        TuningResult(String paramsDescription, double accuracy) {
-            this.paramsDescription = paramsDescription;
-            this.accuracy = accuracy;
-        }
+         * A simple data class to store the results of a single training trial.
+         */
+        private record TuningResult(String paramsDescription, double accuracy) implements Comparable<TuningResult> {
 
         @Override
-        public int compareTo(TuningResult other) {
-            // Ordena por acurácia em ordem decrescente (maior é melhor)
-            return Double.compare(other.accuracy, this.accuracy);
-        }
+            public int compareTo(TuningResult other) {
+                // Ordena por acurácia em ordem decrescente (maior é melhor)
+                return Double.compare(other.accuracy, this.accuracy);
+            }
 
-        @Override
-        public String toString() {
-            return String.format("Parameters: [%s] -> Accuracy: %.2f%%", paramsDescription, accuracy);
+            @Override
+            public String toString() {
+                return String.format("Parameters: [%s] -> Accuracy: %.2f%%", paramsDescription, accuracy);
+            }
         }
-    }
 
     /**
      * Executes a parallel grid search to find the best hyperparameter combination.
@@ -245,14 +236,18 @@ public class HyperparameterTuner {
                     // Wait for the next completed task, with a generous timeout.
                     Future<TuningResult> future = completionService.poll(10, TimeUnit.MINUTES);
                     if (future == null) {
-                        System.err.printf("\n[WARNING] A training trial timed out after 10 minutes and was cancelled. Skipping to the next one.\n");
+                        System.err.print("\n[WARNING] A training trial timed out after 10 minutes and was cancelled. Skipping to the next one.\n");
                         continue; // Move to the next result
                     }
                     TuningResult result = future.get();
                     results.add(result);
-                    // Guarda o resultado imediatamente para garantir a persistência.
-                    saveResult(result);
-                    System.out.printf(">> Completed trial %d/%d. Result saved.\n", (i + 1), tasks.size());
+                    // Guarda o resultado imediatamente, mas apenas se a acurácia for superior a 90%.
+                    if (result.accuracy > 90.0) {
+                        saveResult(result);
+                        System.out.printf(">> Completed trial %d/%d. Accuracy > 90%%. Result saved.\n", (i + 1), tasks.size());
+                    } else {
+                        System.out.printf(">> Completed trial %d/%d. Accuracy <= 90%% (%.2f%%). Result ignored.\n", (i + 1), tasks.size(), result.accuracy);
+                    }
 
                 } catch (CancellationException e) {
                     System.err.println("A training trial was cancelled, possibly due to a timeout.");
@@ -287,7 +282,7 @@ public class HyperparameterTuner {
         results.forEach(System.out::println);
 
         if (!results.isEmpty()) {
-            TuningResult bestResult = results.get(0);
+            TuningResult bestResult = results.getFirst();
             System.out.println("\n--- BEST COMBINATION FOUND ---");
             System.out.printf("Parameters: %s\n", bestResult.paramsDescription);
             System.out.printf("Best Accuracy: %.2f%%\n", bestResult.accuracy);

@@ -33,7 +33,7 @@ public class GpuMLP23 {
     private final double lr;
     private final int epochs;
     private final double momentum;
-    private static final int SEED = 4;
+    private final int SEED = MLP23.SEED;
 
     public GpuMLP23(int[] topology, IDifferentiableFunction[] functions, double lr, double momentum, int epochs) {
         this.lr = lr;
