@@ -1,11 +1,7 @@
 package neural;
 
-import java.io.FileInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import math.Matrix;
 import neural.activation.IDifferentiableFunction;
@@ -55,7 +51,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * }</pre>
  *
  * @see Matrix
- * @see IDifferentiableFunction
  * @see apps.MLP23
  * @author hdaniel@ualg.pt, Brandon Mejia
  * @version 2025-12-05
@@ -304,49 +299,6 @@ public class MLP implements Serializable {
         }
 
         return bestValidationError;
-    }
-
-    /**
-     * Saves the current state of the MLP model to a file.
-     * <p>
-     * This method serializes the entire MLP object, including its topology,
-     * weights, and biases, allowing it to be loaded later for inference
-     * without retraining.
-     * </p>
-     *
-     * @param filePath The path to the file where the model will be saved (e.g., "src/data/models/mlp_model.ser").
-     * @throws IOException If an I/O error occurs during serialization.
-     */
-    public void saveModel(String filePath) throws IOException {
-        File modelFile = new File(filePath);
-        File parentDir = modelFile.getParentFile();
-
-        // Garante que o diretório pai exista. Se não existir, cria-o.
-        if (parentDir != null && !parentDir.exists()) {
-            parentDir.mkdirs();
-        }
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(modelFile))) {
-            oos.writeObject(this);
-            System.out.println("Model saved successfully to " + filePath);
-        }
-    }
-
-    /**
-     * Loads a pre-trained MLP model from a file.
-     *
-     * @param filePath The path to the serialized model file.
-     * @return A new {@link MLP} instance with the loaded state.
-     * @throws IOException            If an I/O error occurs during deserialization.
-     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
-     */
-    public static MLP loadModel(String filePath) throws IOException, ClassNotFoundException
-    {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath)))
-        {
-            MLP model = (MLP) ois.readObject();
-            //System.out.println("Model loaded successfully from " + filePath);
-            return model;
-        }
     }
 
     /**

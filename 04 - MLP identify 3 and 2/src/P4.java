@@ -1,6 +1,6 @@
-import apps.MLP23;
 import math.Matrix;
 import neural.MLP;
+import neural.ModelUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import java.util.Arrays;
  * </p>
  *
  * @author Brandon Mejia
- * @version 2025-12-02
+ * @version 2025-12-03
  */
 public class P4 {
 
@@ -32,17 +32,13 @@ public class P4 {
      */
     public static void main(String[] args) throws IOException {
         // 1. Define o caminho para o modelo treinado.
-        // Este caminho deve ser o mesmo usado em MLP23.java para salvar o modelo.
-        String modelPath = "src/data/models/digit_classifier_v99_dataset_seed1.ser";
-        MLP mlp;
+        String modelPath = "src/models/digit_classifier_v99_dataset_seed1.ser";
+        MLP mlp = ModelUtils.loadModel(modelPath);
 
-        try {
-            mlp = MLP.loadModel(modelPath);
-        }
-        catch (IOException | ClassNotFoundException e) {
-            System.err.println("ERRO: Falha ao carregar o modelo. Verifique se o arquivo existe e se o treino foi executado antes.");
-            e.printStackTrace();
-            return; // Encerra a execução se o modelo não puder ser carregado.
+        // Se o modelo não pôde ser carregado, encerra a execução.
+        if (mlp == null) {
+            System.err.println("ERRO: O modelo MLP não foi carregado. Encerrando o programa.");
+            return;
         }
 
         // 2. Read multiple lines from the console and predict each one.

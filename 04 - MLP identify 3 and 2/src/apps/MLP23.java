@@ -1,10 +1,10 @@
 package apps;
 
-import java.io.IOException;
-import math.Matrix;
 import neural.activation.IDifferentiableFunction;
 import neural.activation.Sigmoid;
 import neural.MLP;
+import neural.ModelUtils;
+import math.Matrix;
 
 /**
  * A factory and trainer for a specific Multi-Layer Perceptron (MLP) model designed to classify handwritten digits '2' and '3'.
@@ -37,26 +37,17 @@ import neural.MLP;
  * MLP bestModel = trainer.getMLP();
  *
  * // 4. (Optional) Save the trained model for later use.
- * String modelPath = "src/data/models/my_trained_model.ser";
- * try {
- *     bestModel.saveModel(modelPath);
- * } catch (IOException e) {
- *     e.printStackTrace();
- * }
- *
- * // 5. Use the model to make a prediction on a new data sample.
+ * // 5. Use the model to make a prediction on a new data sample. // 4. (Optional) Save the trained model for later use.
  * // (Assuming 'newImageMatrix' is a 1x400 Matrix).
  * Matrix prediction = bestModel.predict(newImageMatrix);
  * long label = Math.round(prediction.get(0, 0));
  * System.out.println(label == 0 ? "Predicted: 2" : "Predicted: 3");
  * }</pre>
  *
- * @see MLP#saveModel(String)
- * @see MLP#loadModel(String)
  * @see MLP
  * @see DataHandler
  * @see IDifferentiableFunction
- * @author Brandon Mejia
+ * @author Brandon Mejia, hdaniel@ualg.pt
  * @version 2025-12-02
  */
 public class MLP23
@@ -97,6 +88,20 @@ public class MLP23
     }
 
     /**
+     * A high-level method that orchestrates the entire training process and saves the resulting model.
+     * <p>
+     * This method serves as a convenient entry point for a complete train-and-save workflow. It first
+     * calls the internal {@link #train()} method to run the full training and validation cycle.
+     * Once training is complete, it uses the {@link ModelUtils} class to serialize the best-performing
+     * model to the specified file path.
+     * </p>
+     * @param modelPath The file path where the trained model should be saved (e.g., "src/models/mlp_model.ser").
+     */
+    public void trainAndSaveModel(String modelPath) {
+        train(); // Execute the full training process.
+        ModelUtils.saveModel(this.mlp, modelPath);
+    }
+    /**
      * Trains the MLP model using the provided training and validation datasets.
      *
      * @param trainInputs  The matrix of training input data.
@@ -118,30 +123,4 @@ public class MLP23
      */
     public MLP getMLP() { return this.mlp; }
 
-
-    /**
-     * Trains the model and saves it to a default file path.
-     * This is a convenience method that calls {@link #trainAndSaveModel(String)}.
-     */
-    public void saveMLP()
-    {
-        // Define o caminho padrão para guardar o modelo.
-        String modelPath = "src/data/models/digit_classifier_v"+99+"_dataset_seed1.ser";
-        trainAndSaveModel(modelPath);
-    }
-
-    /**
-     * Trains the model and then saves the final state to the specified file path.
-     * @param modelPath The path where the trained model will be saved (e.g., "src/data/models/my_model.ser").
-     */
-    public void trainAndSaveModel(String modelPath) {
-        System.out.println("--- Iniciando processo de treino e gravação ---");
-        train(); // Executa o treino completo.
-        try {
-            this.mlp.saveModel(modelPath);
-        } catch (IOException e) {
-            System.err.println("ERRO: Falha ao guardar o modelo em " + modelPath);
-            e.printStackTrace();
-        }
-    }
 }
