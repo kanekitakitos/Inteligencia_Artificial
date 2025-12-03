@@ -51,9 +51,9 @@ import neural.MLP;
 public class MLP23
 {
 
-    private final double lr = 0.0005;
+    private final double lr = 0.01;
     private final int epochs = 20000;
-    private final double momentum = 0.99;
+    private final double momentum = 0.9;
     private MLP mlp;
     public static final int SEED = 8; // 2;4;5 5:00 ;7;8 4:21 ;16 4:17
     // seed 8 bigRuido e dataset 99.25%
