@@ -54,8 +54,11 @@ public class P4 {
             }
         }
 
+
+
         // 3. Construir uma única matriz (m x 400) e fazer a predição em lote.
-        if (!allInputs.isEmpty()) {
+        if (!allInputs.isEmpty())
+        {
             // Converte a lista de arrays para uma matriz 2D (m x 400).
             // O argumento define o tipo do array resultante. O Java aloca o tamanho correto.
             int numRows = allInputs.size();
