@@ -10,24 +10,21 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-/**
- * A comprehensive data management utility for loading, preprocessing, and serving datasets for the MLP.
+/** A comprehensive data management utility for loading, preprocessing, and serving datasets.
  * <p>
  * This class centralizes all dataset handling logic, providing a single point of access for training,
  * validation, and test data. It is designed to be instantiated with specific configurations
  * (like the validation split ratio) and then serve ready-to-use matrices to the models.
  * The file paths for the datasets are hardcoded as constants, promoting cleaner code in
- * the training and hyperparameter tuning classes.
+ * the training and tuning classes.
  * </p>
  *
  * <h3>Core Functionality</h3>
  * <ul>
  *   <li><b>Centralized Path Management:</b> Default paths for training and test data are managed internally.</li>
- *   <li><b>Automated Preprocessing:</b> Includes robust pixel value normalization (from [0, 255] to [0, 1])
- *       and binary label encoding (e.g., digit '3' becomes 1.0, others become 0.0).</li>
- *   <li><b>Data Aggregation:</b> Loads data from multiple source files into a single, unified dataset.</li>
- *   <li><b>Data Shuffling & Splitting:</b> Automatically shuffles the dataset with a fixed seed for reproducibility
- *       and can split it into training and validation sets.</li>
+ *   <li><b>Automated Preprocessing:</b> Includes pixel value normalization (0-255 to 0-1) and label encoding.</li>
+ *   <li><b>Data Splitting:</b> Automatically shuffles and splits the full dataset into training and validation sets.</li>
+ *   <li><b>Static Loaders:</b> Provides a simple static method to load the default test set without needing an instance.</li>
  * </ul>
  *
  * <h3>Example: Training a Model with Default Data</h3>
@@ -65,8 +62,8 @@ public class DataHandler {
     // --- Default File Paths ---
     private static final String[] DEFAULT_INPUT_PATHS = {
             //"src/data/borroso.csv",
-            "src/data/train/8.csv",
-            "src/data/train/borroso.csv",
+            "src/data/train/dataset.csv",
+            "src/data/train/bigRuido.csv",
             //"src/data/small.csv",
     }; // bigRuido e dataset the best 99.13
     private static final String[] DEFAULT_OUTPUT_PATHS = {

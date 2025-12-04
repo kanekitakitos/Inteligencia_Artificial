@@ -56,7 +56,7 @@ public class MLP23
     private final double momentum = 0.99;
     private MLP mlp;
     public static final int SEED = 8; // 2;4;5 5:00 ;7;8 4:21 ;16 4:17
-    // seed 8 bigRuido e dataset 98 ---> 84.625
+    // seed 8 bigRuido e dataset 99.25%
 
     /**
      * Constructs the MLP trainer with a predefined network topology and activation functions.

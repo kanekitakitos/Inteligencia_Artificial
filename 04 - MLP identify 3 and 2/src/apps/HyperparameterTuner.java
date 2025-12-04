@@ -109,23 +109,23 @@ public class HyperparameterTuner {
      * Se {@code true}, o número de threads será limitado a 1 para evitar sobrecarga de VRAM.
      * Se {@code false}, usará todos os núcleos da CPU para paralelismo máximo.
      */
-    private static final boolean USE_GPU = false;
+    private static final boolean USE_GPU = true;
 
     private final int SEED = MLP23.SEED;
-    private final int epochs = 20000;
+    private final int epochs = 30000;
 
     // --- Hiperparámetros para a busca ---
     private final double[] learningRates = {0.01,
-                                        0.005, 0.001,0.002,0.0225,0.02,0.003
+                                        0.005, 0.001,0.002,0.02,0.003
                                         ,0.0005,0.0001,0.0002,0.00005,0.00001
     };
 
-    private final double[] momentums = {0.7, 0.8, 0.9 , 0.95, 0.99 , 0.6
+    private final double[] momentums = {0.7, 0.8, 0.9 , 0.95, 0.6 , 0.0
     };
 
     private final int[][] topologies = {
             {400, 1, 1},
-            {400, 2, 1},
+            //{400, 2, 1},
             //{400, 4, 1}
 
     };
@@ -207,10 +207,11 @@ public class HyperparameterTuner {
         if (USE_GPU) {
             // Força a execução em série para garantir que cada tarefa tenha acesso exclusivo à VRAM da GPU.
             // Correr várias tarefas de GPU em paralelo quase sempre causa erros de OutOfMemory.
-            numThreads = 1;
+            numThreads = 8;
             mode = "GPU (Foco Total, Serializado)";
             System.out.println("Modo GPU ativado. As tarefas serão executadas uma a uma para maximizar o uso da GPU.");
-        } else {
+        } else
+        {
             numThreads = Runtime.getRuntime().availableProcessors(); // Usa todos os núcleos da CPU.
             mode = String.format("CPU (Paralelismo Máximo em %d núcleos)", numThreads);
             System.out.println("Modo CPU ativado. As tarefas serão distribuídas por todos os núcleos da CPU.");
