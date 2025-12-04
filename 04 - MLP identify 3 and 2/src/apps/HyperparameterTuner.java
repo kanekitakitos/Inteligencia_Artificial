@@ -109,7 +109,7 @@ public class HyperparameterTuner {
      * Se {@code true}, o número de threads será limitado a 1 para evitar sobrecarga de VRAM.
      * Se {@code false}, usará todos os núcleos da CPU para paralelismo máximo.
      */
-    private static final boolean USE_GPU = true;
+    private static final boolean USE_GPU = false;
 
     private final int SEED = MLP23.SEED;
     private final int epochs = 30000;
