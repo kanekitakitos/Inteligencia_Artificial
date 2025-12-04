@@ -1,0 +1,70 @@
+
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'br.com.p4'
+version '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+// Define os caminhos para o código principal e para os testes
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+            // Exclui a pasta de testes do código principal
+            exclude 'test/**'
+        }
+    }
+    test {
+        java {
+            srcDirs = ['src/test']
+        }
+    }
+}
+
+application {
+    mainClassName = 'HardwareCheck'
+}
+
+ext {
+    nd4jVersion = '1.0.0-M2.1'
+    cudaVersion = '11.6' // Verifique se corresponde à versão do seu CUDA Toolkit
+    junitVersion = '5.8.1'
+}
+
+dependencies {
+    // ND4J Core
+    implementation "org.nd4j:nd4j-api:${nd4jVersion}"
+
+    // Backend para CUDA
+    implementation "org.nd4j:nd4j-cuda-${cudaVersion}-platform:${nd4jVersion}"
+
+    // Dependência auxiliar do ND4J
+    implementation 'org.apache.commons:commons-math3:3.6.1'
+
+    // SLF4J para logs
+    implementation 'org.slf4j:slf4j-api:1.7.36'
+    runtimeOnly 'org.slf4j:slf4j-simple:1.7.36'
+
+    // Dependências de Teste (JUnit 5)
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+}
+
+// Configura a tarefa de teste para usar o JUnit Platform
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+// Configuração para garantir que a JVM tenha memória suficiente e use UTF-8
+applicationDefaultJvmArgs = ["-Xmx4g", "-Dfile.encoding=UTF-8"]
+
+// Garante que a compilação também use UTF-8
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

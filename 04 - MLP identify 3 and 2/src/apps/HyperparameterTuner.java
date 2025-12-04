@@ -207,7 +207,7 @@ public class HyperparameterTuner {
         if (USE_GPU) {
             // Força a execução em série para garantir que cada tarefa tenha acesso exclusivo à VRAM da GPU.
             // Correr várias tarefas de GPU em paralelo quase sempre causa erros de OutOfMemory.
-            numThreads = 8;
+            numThreads =8;
             mode = "GPU (Foco Total, Serializado)";
             System.out.println("Modo GPU ativado. As tarefas serão executadas uma a uma para maximizar o uso da GPU.");
         } else
