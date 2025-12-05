@@ -72,8 +72,8 @@ public class DataHandler {
     private static final String[] DEFAULT_OUTPUT_PATHS = {
             "src/data/train/labels.csv" // Reused for all input files
     };
-    private static final String DEFAULT_TEST_INPUT_PATH = "src/data/testData/datasetTest.csv";
-    private static final String DEFAULT_TEST_LABELS_PATH = "src/data/testData/labelsTest.csv";
+    private static final String DEFAULT_TEST_INPUT_PATH = "src/data/minist/test_pixels.csv";
+    private static final String DEFAULT_TEST_LABELS_PATH = "src/data/minist/test_labels.csv";
 
     public enum NormalizationType {
         MIN_MAX, // Normaliza para o intervalo [0, 1]

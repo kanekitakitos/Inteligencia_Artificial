@@ -38,6 +38,14 @@ class TestMLP23
 
 
 
+
+
+//        MLP23 mlp23 = new MLP23();
+//        mlp23.train();
+//        MLP mlp = mlp23.getMLP();
+//        mlp.saveModel(P4.path);
+
+
         mlp = ModelUtils.loadModel(P4.path);
     }
 
