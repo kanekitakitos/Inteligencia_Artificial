@@ -10,6 +10,23 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * A Multi-Layer Perceptron (MLP) implementation designed for CPU-based computation.
+ * <p>
+ * This class provides a complete framework for building, training, and evaluating a neural network.
+ * It uses a custom {@link math.Matrix} class for all underlying mathematical operations, making it
+ * self-contained and independent of external numerical libraries. The core logic includes feedforward
+ * prediction and backpropagation with momentum for training.
+ * </p>
+ *
+ * <h3>Advanced Training Features</h3>
+ * <p>
+ * The {@link #train(Matrix, Matrix, Matrix, Matrix, double, int, double)} method implements a sophisticated
+ * training loop that includes mini-batch processing, asynchronous validation, best-model checkpointing,
+ * and early stopping. This allows for efficient and robust training, preventing overfitting and ensuring
+ * the best-performing model is retained.
+ * </p>
+ *
+ * @see GpuMLP A direct counterpart to this class, optimized for GPU acceleration using the ND4J library.
  * @author hdaniel@ualg.pt, Brandon Mejia
  * @version 202511052038
  */
@@ -172,7 +189,7 @@ public class MLP implements Serializable {
 
             // Print progress
             if ((epoch + 1) % 50 == 0) {
-                System.out.printf("Epoch %d/%d, MSE: %.50f\n", epoch + 1, epochs, mse[epoch]);
+                //System.out.printf("Epoch %d/%d, MSE: %.50f\n", epoch + 1, epochs, mse[epoch]);
             }
         }
         return mse;
@@ -234,7 +251,7 @@ public class MLP implements Serializable {
 
                     // Imprime o progresso em intervalos regulares para feedback visual
                     if ((epoch - VALIDATION_FREQUENCY) > 0 && (epoch - VALIDATION_FREQUENCY) % 100 == 0) {
-                        System.out.printf("Época: %-5d | LR: %.8f | (MSE): %.6f\n", epoch - VALIDATION_FREQUENCY, lr, currentValidationError);
+                        //System.out.printf("Época: %-5d | LR: %.8f | (MSE): %.6f\n", epoch - VALIDATION_FREQUENCY, lr, currentValidationError);
                     }
 
                         // Verifica se o modelo melhorou

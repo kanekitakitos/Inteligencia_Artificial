@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 
-import math.Matrix;
 
 /**
  * Orchestrates a resilient and automated search for optimal MLP model hyperparameters through a parallelized grid search.
@@ -26,8 +25,7 @@ import math.Matrix;
  * ideal for long-running tuning tasks that are prone to interruption.
  * </p>
  * <ul>
- *   <li><b>GPU Acceleration:</b> It offloads the intensive training tasks to the {@link GpuMLP23}
- *       trainer, which uses the ND4J library to leverage GPU computation.</li>
+ *   <li><b>CPU-Based Training:</b> It uses the standard {@link MLP23} trainer to ensure results are consistent with the main application.</li>
  *   <li><b>Parallel Execution:</b> By using a thread pool, it evaluates multiple model
  *       configurations concurrently, significantly reducing search time.</li>
  *   <li><b>Fault Tolerance:</b> The results of each trial are immediately saved to a log file. If the
@@ -65,20 +63,6 @@ public static void main(String[] args) {
  *   </li>
  * </ul>
  *
- * <h3>Troubleshooting and Known Issues</h3>
- * <h4>Intermittent `ArrayIndexOutOfBoundsException`</h4>
- * <p>
- * The console log may show intermittent `ArrayIndexOutOfBoundsException` failures, often with a
- * `null` error message. This is a known issue caused by a **race condition** when multiple
- * threads attempt to read the same data files concurrently. While the `try-catch` block
- * prevents the application from crashing, these failed trials represent wasted computation.
- * </p>
- * <p>
- * **Solution:** If these errors are frequent, the most effective solution is to reduce the level of
- * parallelism by setting `numThreads` to `1`. This will force the trials to run sequentially,
- * eliminating the file access conflict at the cost of longer execution time.
- * </p>
- *
  * <h3>Future Improvements</h3>
  * <p>
  * While Grid Search is exhaustive, it can be computationally expensive. For a more
@@ -91,7 +75,7 @@ public static void main(String[] args) {
  *       previous trials to inform which combination to try next.</li>
  * </ul>
  *
- * @see GpuMLP23
+ * @see MLP23
  * @see ExecutorService
  * @see CompletionService
  * @author Brandon Mejia
@@ -103,13 +87,6 @@ public class HyperparameterTuner {
      * O ficheiro onde os resultados da otimização são guardados.
      */
     private static final String RESULTS_FILE = "src/data/tuning_results.log";
-
-    /**
-     * Define se o treino será executado em GPU.
-     * Se {@code true}, o número de threads será limitado a 1 para evitar sobrecarga de VRAM.
-     * Se {@code false}, usará todos os núcleos da CPU para paralelismo máximo.
-     */
-    private static final boolean USE_GPU = false;
 
     private final int SEED = MLP23.SEED;
     private final int epochs = 30000;
@@ -125,7 +102,7 @@ public class HyperparameterTuner {
     };
 
     private final int[][] topologies = {
-            //{400, 4, 1},
+            {400, 4, 1},
             //{400, 6, 1},
             //{400, 3, 1},
             {400, 1, 1}
@@ -141,22 +118,22 @@ public class HyperparameterTuner {
     /**
          * A simple data class to store the results of a single training trial.
          */
-        private record TuningResult(String paramsDescription, double accuracy, double f1Score) implements Comparable<TuningResult> {
+        private record TuningResult(String paramsDescription, double accuracy, double precision, double recall, double f1Score) implements Comparable<TuningResult> {
 
         @Override
             public int compareTo(TuningResult other) {
                 // Ordena por acurácia em ordem decrescente (maior é melhor).
                 // Em caso de empate, o F1-Score pode ser usado como critério secundário.
-                return Double.compare(other.accuracy, this.accuracy);
+                return Double.compare(other.f1Score, this.f1Score);
             }
 
             @Override
             public String toString() {
-                return String.format("%d Parameters: [%s] -> Accuracy: %.2f%%, F1-Score: %.3f",
+                return String.format("%d Parameters: [%s] -> Accuracy: %.2f%%, Precision: %.4f, Recall: %.4f, F1-Score: %.4f",
                         MLP23.SEED,
-                        paramsDescription,
+                        paramsDescription, // Topology, Functions, LR, Momentum
                         accuracy,
-                        f1Score);
+                        precision, recall, f1Score);
             }
         }
 
@@ -176,13 +153,10 @@ public class HyperparameterTuner {
 
         // --- Otimização: Carregar os dados UMA VEZ antes de iniciar a busca ---
         System.out.println("Pre-loading and caching datasets to optimize parallel trials...");
-        DataHandler dataHandler = new DataHandler(SEED, DataHandler.NormalizationType.MIN_MAX); // Usar uma seed fixa e Z-score
-        Matrix trainInputs = dataHandler.getTrainInputs();
-        Matrix trainOutputs = dataHandler.getTrainOutputs();
-        Matrix[] testData = DataHandler.loadDefaultTestData();
+        DataHandler dataHandler = new DataHandler(SEED, DataHandler.NormalizationType.MIN_MAX); // Usar uma seed fixa e Min-Max
         System.out.printf("-> Datasets loaded: %d training samples, %d test samples.\n\n",
                 dataHandler.getTrainingDataSize(),
-                testData[0].rows());
+                dataHandler.getTestInputs().rows());
 
         // Create all combinations of parameters to be tested.
         List<Callable<TuningResult>> tasks = new ArrayList<>();
@@ -203,34 +177,22 @@ public class HyperparameterTuner {
                         }
 
                         // Create a task for the current combination.
-                        tasks.add(() -> runTrial(paramsDescription, topology, functions, lr, momentum, trainInputs, trainOutputs, testData));
+                        tasks.add(() -> runTrial(paramsDescription, topology, functions, lr, momentum));
                     }
                 }
             }
         }
 
-        // --- Configuração do Paralelismo (CPU vs GPU) ---
-        final int numThreads;
-        final String mode;
-        if (USE_GPU) {
-            // Força a execução em série para garantir que cada tarefa tenha acesso exclusivo à VRAM da GPU.
-            // Correr várias tarefas de GPU em paralelo quase sempre causa erros de OutOfMemory.
-            numThreads = 8;
-            mode = "GPU (Foco Total, Serializado)";
-            System.out.println("Modo GPU ativado. As tarefas serão executadas uma a uma para maximizar o uso da GPU.");
-        } else
-        {
-            numThreads = Runtime.getRuntime().availableProcessors(); // Usa todos os núcleos da CPU.
-            mode = String.format("CPU (Paralelismo Máximo em %d núcleos)", numThreads);
-            System.out.println("Modo CPU ativado. As tarefas serão distribuídas por todos os núcleos da CPU.");
-        }
+        // --- Configuração do Paralelismo ---
+        // Usar um número fixo de threads para não sobrecarregar a CPU.
+        final int numThreads = Math.max(1, Runtime.getRuntime().availableProcessors() - 2);
 
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
         // CompletionService decouples task submission from result retrieval, which is more efficient.
         CompletionService<TuningResult> completionService = new ExecutorCompletionService<>(executor);
         List<TuningResult> results = new ArrayList<>();
 
-        System.out.printf("--- Iniciando a Busca de Hiperparâmetros com %d thread(s) | Modo: %s ---\n", numThreads, mode);
+        System.out.printf("--- Iniciando a Busca de Hiperparâmetros com %d thread(s) no modo CPU ---\n", numThreads);
         System.out.printf("Total new combinations to test: %d\n\n", tasks.size());
 
         // Submit all tasks for execution.
@@ -253,11 +215,11 @@ public class HyperparameterTuner {
                     results.add(trialResult);
 
                     // Guarda o resultado imediatamente, mas apenas se a acurácia for superior a 90%.
-                    if (trialResult.accuracy > 90.0) { // Limiar de exemplo
-                        saveResult(trialResult);
-                        System.out.printf(">> Completed trial %d/%d. Result saved: Accuracy: %.2f%%, F1: %.3f\n", (i + 1), tasks.size(), trialResult.accuracy, trialResult.f1Score);
+                    if (trialResult.accuracy > 96.0) { // Limiar de exemplo
+                        saveResult(trialResult); // Salva a linha completa no log
+                        System.out.printf(">> Completed trial %d/%d. Result saved: Accuracy: %.2f%%, F1: %.4f\n", (i + 1), tasks.size(), trialResult.accuracy, trialResult.f1Score);
                     } else {
-                        System.out.printf(">> Completed trial %d/%d. Accuracy <= 90%% (%.2f%%). Result ignored.\n", (i + 1), tasks.size(), trialResult.accuracy);
+                        System.out.printf(">> Completed trial %d/%d. Accuracy <= 96%% (%.2f%%). Result ignored.\n", (i + 1), tasks.size(), trialResult.accuracy);
                     }
 
                 } catch (CancellationException e) {
@@ -309,34 +271,32 @@ public class HyperparameterTuner {
      * <ol>
      *   <li>Instantiating a {@link GpuMLP23} trainer with the specified configuration.</li>
      *   <li>Executing the training process using the full training dataset.</li>
-     *   <li>Evaluating the trained model against the test dataset to calculate its accuracy.</li>
+     *   <li>Evaluating the trained model against the test dataset to calculate its performance.</li>
      * </ol>
      *
      * @return A {@link TuningResult} object containing the parameters and final validation error.
      */
-    private TuningResult runTrial(String paramsDescription, int[] topology, IDifferentiableFunction[] functions, double lr, double momentum, Matrix trainInputs, Matrix trainOutputs, Matrix[] testData) {
+    private TuningResult runTrial(String paramsDescription, int[] topology, IDifferentiableFunction[] functions, double lr, double momentum) {
         try {
             System.out.println("--- Testing combination: " + paramsDescription + " ---");
 
-            // --- GPU-ACCELERATED TRIAL ---
-            // Usamos o GpuMLP23, que é projetado para receber os hiperparâmetros e orquestrar o treino na GPU.
-            // O número de épocas é fixo aqui, mas poderia ser outro hiperparâmetro.
+            // --- CPU-BASED TRIAL ---
+            // Carrega os dados para cada trial para garantir isolamento entre threads.
+            DataHandler dataHandler = new DataHandler(SEED, DataHandler.NormalizationType.MIN_MAX);
 
-            GpuMLP23 gpuTrainer = new GpuMLP23(topology, functions, lr, momentum, this.epochs);
-
-            gpuTrainer.train(trainInputs, trainOutputs, testData[0], testData[1]);
+            // Instancia o treinador MLP23 com os hiperparâmetros da iteração atual.
+            MLP23 trainer = new MLP23(topology, functions, lr, momentum, this.epochs);
+            trainer.train(dataHandler.getTrainInputs(), dataHandler.getTrainOutputs(), dataHandler.getTestInputs(), dataHandler.getTestOutputs());
 
             // --- TEST THE TRAINED NETWORK ---
-            // After training, evaluate the model's accuracy on the test dataset.
-            GpuMLP23.TestMetrics metrics = gpuTrainer.test(testData[0], testData[1]);
-            System.out.printf("--- Finished GPU trial: [%s] -> Accuracy: %.2f%%, F1-Score: %.3f ---\n", paramsDescription, metrics.accuracy, metrics.f1Score);
-
-            return new TuningResult(paramsDescription, metrics.accuracy, metrics.f1Score);
-        } catch (ArrayIndexOutOfBoundsException e) {
+            MLP23.TestMetrics metrics = trainer.test(dataHandler.getTestInputs(), dataHandler.getTestOutputs());
+            System.out.printf("--- Finished trial: [%s] -> Accuracy: %.2f%%, Precision: %.4f, Recall: %.4f, F1-Score: %.4f ---\n", paramsDescription, metrics.accuracy(), metrics.precision(), metrics.recall(), metrics.f1Score());
+            return new TuningResult(paramsDescription, metrics.accuracy(), metrics.precision(), metrics.recall(), metrics.f1Score());
+        } catch (Exception e) {
             // Use e.toString() for a more descriptive message, as e.getMessage() can be null.
             System.err.printf("--- FAILED trial: [%s] -> Exception: %s. Likely a data loading issue. ---\n", paramsDescription, e.toString());
             // Retorna um resultado com 0 de acurácia e F1-Score para marcar a tentativa como falhada.
-            return new TuningResult(paramsDescription, 0.0, 0.0);
+            return new TuningResult(paramsDescription, 0.0, 0.0, 0.0, 0.0);
         }
     }
 
@@ -396,19 +356,29 @@ public class HyperparameterTuner {
         try {
             String params = line.substring(line.indexOf('[') + 1, line.indexOf(']'));
             double accuracy = 0.0;
+            double precision = 0.0;
+            double recall = 0.0;
             double f1Score = 0.0;
 
             if (line.contains("Accuracy: ")) {
                 String accString = line.substring(line.indexOf("Accuracy: ") + 10, line.indexOf('%'));
                 accuracy = Double.parseDouble(accString.replace(',', '.'));
             }
+            if (line.contains("Precision: ")) {
+                String precString = line.substring(line.indexOf("Precision: ") + 11, line.indexOf(", Recall:"));
+                precision = Double.parseDouble(precString.replace(',', '.'));
+            }
+            if (line.contains("Recall: ")) {
+                String recallString = line.substring(line.indexOf("Recall: ") + 8, line.indexOf(", F1-Score:"));
+                recall = Double.parseDouble(recallString.replace(',', '.'));
+            }
             if (line.contains("F1-Score: ")) {
-                String f1String = line.substring(line.indexOf("F1-Score: ") + 10);
+                String f1String = line.substring(line.indexOf("F1-Score: ") + 10).trim();
                 f1Score = Double.parseDouble(f1String.replace(',', '.'));
             }
-            return new TuningResult(params, accuracy, f1Score);
+            return new TuningResult(params, accuracy, precision, recall, f1Score);
         } catch (Exception e) { // Captura exceções mais genéricas (e.g., NumberFormatException)
-            return new TuningResult(line, 0.0, 0.0); // Retorna um resultado dummy em caso de falha
+            return new TuningResult(line, 0.0, 0.0, 0.0, 0.0); // Retorna um resultado dummy em caso de falha
         }
     }
 

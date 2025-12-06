@@ -64,16 +64,15 @@ public class DataHandler {
 
     // --- Default File Paths ---
     private static final String[] DEFAULT_INPUT_PATHS = {
-            //"src/data/borroso.csv",
-            //"src/data/train/bigRuido.csv",
-            "src/data/train/dataset.csv",
-            //"src/data/small.csv",
-    }; // bigRuido e dataset
-    private static final String[] DEFAULT_OUTPUT_PATHS = {
-            "src/data/train/labels.csv" // Reused for all input files
+            "src/data/train/datasetAll.csv",
+            //"src/data/train/bigRuido.csv"
+
     };
-    private static final String DEFAULT_TEST_INPUT_PATH = "src/data/minist/test_pixels.csv";
-    private static final String DEFAULT_TEST_LABELS_PATH = "src/data/minist/test_labels.csv";
+    private static final String[] DEFAULT_OUTPUT_PATHS = {
+            "src/data/train/labelsAll.csv" // Reused for all input files
+    };
+    private static final String DEFAULT_TEST_INPUT_PATH = "src/data/minist/train_pixels.csv";
+    private static final String DEFAULT_TEST_LABELS_PATH = "src/data/minist/train_labels.csv";
 
     public enum NormalizationType {
         MIN_MAX, // Normaliza para o intervalo [0, 1]
@@ -268,7 +267,13 @@ public class DataHandler {
         for (int i = 0; i < allInputs.size(); i++) {
             double[] input = allInputs.get(i);
             double[] output = allOutputs.get(i);
-            output[0] = (output[0] == 3.0) ? 1.0 : 0.0; // Converte 3.0 para 1.0, e o resto para 0.0
+            // Converte as etiquetas para o formato binário (0 ou 1) para distinguir entre 2 e 3.
+            // Se a etiqueta já for 0 ou 1, assume-se que já está no formato correto.
+            if (output[0] == 3.0) {
+                output[0] = 1.0; // O dígito '3' é a classe positiva.
+            } else if (output[0] == 2.0) {
+                output[0] = 0.0; // O dígito '2' é a classe negativa.
+            }
             dataPoints.add(new DataPoint(input, output));
         }
 
@@ -341,7 +346,13 @@ public class DataHandler {
                     }
 
                     double[] output = outputs.get(i);
-                    output[0] = (output[0] == 3.0) ? 1.0 : 0.0; // Converte labels
+                    // Converte as etiquetas para o formato binário (0 ou 1) para distinguir entre 2 e 3.
+                    // Se a etiqueta já for 0 ou 1, assume-se que já está no formato correto.
+                    if (output[0] == 3.0) {
+                        output[0] = 1.0; // O dígito '3' é a classe positiva.
+                    } else if (output[0] == 2.0) {
+                        output[0] = 0.0; // O dígito '2' é a classe negativa.
+                    }
                     return new DataPoint(input, output);
                 }).collect(Collectors.toList());
 

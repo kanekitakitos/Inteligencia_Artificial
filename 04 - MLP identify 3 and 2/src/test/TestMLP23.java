@@ -31,22 +31,15 @@ class TestMLP23
         // Use DataHandler to load and preprocess the test data consistently.
         testX = dh.getTestInputs();
         testY = dh.getTestOutputs();
-        // Get a pre-trained clone of the MLP model
-//        MLP23 modelFactory = new MLP23();
-//        modelFactory.train();
-//        mlp = modelFactory.getMLP();
 
-
-
-
-
-//        MLP23 mlp23 = new MLP23();
-//        mlp23.train();
-//        MLP mlp = mlp23.getMLP();
-//        mlp.saveModel(P4.path);
-
-
-        mlp = ModelUtils.loadModel(P4.path);
+        // Para garantir que os testes sejam independentes e reproduzíveis,
+        // treinamos um novo modelo a partir do zero antes de cada execução de teste.
+        // Isso evita a dependência de um ficheiro de modelo pré-existente.
+        System.out.println("Training a new model for testing purposes...");
+        MLP23 mlp23 = new MLP23();
+        mlp23.train();
+        mlp = mlp23.getMLP();
+        System.out.println("Model training for tests complete.");
     }
 
     @Test
