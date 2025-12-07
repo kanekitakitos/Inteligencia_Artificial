@@ -64,15 +64,24 @@ public class DataHandler {
 
     // --- Default File Paths ---
     private static final String[] DEFAULT_INPUT_PATHS = {
-            "src/data/train/datasetAll.csv",
-            //"src/data/train/bigRuido.csv"
+            "src/data/train/dataset3.csv",
+            "src/data/train/test_apenas_novos.csv",
 
     };
     private static final String[] DEFAULT_OUTPUT_PATHS = {
-            "src/data/train/labelsAll.csv" // Reused for all input files
+            "src/data/train/labels.csv", // Reused for all input files
+            "src/data/train/testL.csv",
     };
-    private static final String DEFAULT_TEST_INPUT_PATH = "src/data/minist/train_pixels.csv";
-    private static final String DEFAULT_TEST_LABELS_PATH = "src/data/minist/train_labels.csv";
+
+//    private static final String DEFAULT_TEST_INPUT_PATH = "src/data/minist/train_pixels.csv";
+//    private static final String DEFAULT_TEST_LABELS_PATH = "src/data/minist/train_labels.csv";
+
+    private static final String DEFAULT_TEST_INPUT_PATH = "src/data/testData/datasetTest.csv";
+    private static final String DEFAULT_TEST_LABELS_PATH = "src/data/testData/labelsTest.csv";
+
+    // --- Caminhos para o conjunto de dados de teste extra (para validação rigorosa) ---
+    private static final String EXTRA_TEST_INPUT_PATH = "src/data/minist/test_pixels.csv";
+    private static final String EXTRA_TEST_LABELS_PATH = "src/data/minist/test_labels.csv";
 
     public enum NormalizationType {
         MIN_MAX, // Normaliza para o intervalo [0, 1]
@@ -369,6 +378,15 @@ public class DataHandler {
      */
     public static Matrix[] loadDefaultTestData() {
         return loadTestData(DEFAULT_TEST_INPUT_PATH, DEFAULT_TEST_LABELS_PATH);
+    }
+
+    /**
+     * Carrega o conjunto de dados de teste "extra" para uma validação mais rigorosa.
+     *
+     * @return Um array de {@link Matrix} onde o índice 0 são os inputs e o índice 1 os outputs.
+     */
+    public static Matrix[] loadExtraTestData() {
+        return loadTestData(EXTRA_TEST_INPUT_PATH, EXTRA_TEST_LABELS_PATH);
     }
 
     public Matrix getTrainInputs() { return trainInputs; }

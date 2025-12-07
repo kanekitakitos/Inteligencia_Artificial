@@ -59,6 +59,19 @@ public class Matrix implements Serializable {
     public double get(int row, int col) {
         return data[row][col];
     }
+
+    /**
+     * Returns a copy of the specified row as a double array.
+     * @param row The index of the row to retrieve.
+     * @return A new double array containing the data from the specified row.
+     * @throws IllegalArgumentException if the row index is out of bounds.
+     */
+    public double[] get(int row) {
+        if (row < 0 || row >= this.rows) {
+            throw new IllegalArgumentException("Invalid row index: " + row);
+        }
+        return Arrays.copyOf(data[row], this.cols);
+    }
     public int rows() { return rows; }
     public int cols() { return cols; }
 
@@ -97,6 +110,29 @@ public class Matrix implements Serializable {
         return this.traverse(e -> scalar - e);
     }
 
+    //divide matrix by scalar
+    public Matrix div(double scalar) {
+        if (scalar == 0) {
+            throw new IllegalArgumentException("Division by zero.");
+        }
+        return this.traverse(e -> e / scalar);
+    }
+
+    public Matrix pow(double exponent) {
+        return this.traverse(e -> Math.pow(e, exponent));
+    }
+
+    public Matrix sqrt() {
+        return this.traverse(Math::sqrt);
+    }
+
+    /**
+     * Applies the absolute value function to each element of the matrix.
+     * @return A new matrix where each element is the absolute value of the corresponding element in the original matrix.
+     */
+    public Matrix abs() {
+        return this.traverse(Math::abs);
+    }
 
     //==============================================================
     //  Element-wise operations between two matrices
@@ -129,6 +165,11 @@ public class Matrix implements Serializable {
     //sub two matrices
     public Matrix sub(Matrix other) {
         return this.elementWise(other, (a, b) -> a - b);
+    }
+
+    //divide two matrices (element wise)
+    public Matrix div(Matrix other) {
+        return this.elementWise(other, (a, b) -> a / b);
     }
 
 

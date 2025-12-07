@@ -1,4 +1,5 @@
 package apps;
+import math.Matrix;
 import neural.activation.IDifferentiableFunction;
 import neural.activation.*;
 
@@ -72,6 +73,7 @@ public static void main(String[] args) {
  *   <li><b>Random Search:</b> Instead of testing all combinations, Random Search samples a fixed
  *       number of random combinations. It often finds better models in less time.</li>
  *   <li><b>Bayesian Optimization:</b> An even more advanced technique that uses the results from
+ *   <li><b>Bayesian Optimization:</b> An even more advanced technique that uses the results from
  *       previous trials to inform which combination to try next.</li>
  * </ul>
  *
@@ -89,36 +91,46 @@ public class HyperparameterTuner {
     private static final String RESULTS_FILE = "src/data/tuning_results.log";
 
     private final int SEED = MLP23.SEED;
-    private final int epochs = 30000;
+    private final int epochs = 10000;
 
-    // --- Hiperparámetros para a busca ---
-    private final double[] learningRates = {0.01, 0.02,0.03 , 0.05, 0.04,0.6,0.7,
-                                        0.005, 0.001,0.002,0.003
-                                        //,0.0005,0.0001,0.0002,0.00005
+    private final double[] learningRates = {
+            0.0001,  // Ligeiramente abaixo
+            0.001,
+            0.01,  // O teu ponto de referência
+            0.1,
+            // Limite superior agressivo
     };
 
-    private final double[] momentums = {0.7, 0.8, 0.6 ,0.5,
-                                            0.9
+    // Variações subtis à volta de 0.65
+    private final double[] momentums = {
+            0.6,
+            0.70,   // O teu ponto de referência
+            0.8,
+            0.9
     };
 
     private final int[][] topologies = {
-            {400, 4, 1},
-            //{400, 6, 1},
-            //{400, 3, 1},
-            {400, 1, 1}
-
+            //{400, 2, 1},
+            {400, 1, 1},
     };
     private final IDifferentiableFunction[][] activationFunctions =
             {
             {new Sigmoid(), new Sigmoid()},
             {new TanH(), new Sigmoid()},
-            //{new ReLU(), new Sigmoid()} // ReLU para camadas ocultas, Sigmoid para a saída
     };
+
+    // Novo: Parâmetros de regularização L2 (lambda)
+    private final double[] l2Lambdas = {
+            //0.00011, // Um valor pequeno para começar
+            0.0,
+            // Sem regularização, para comparação
+    };
+
 
     /**
          * A simple data class to store the results of a single training trial.
          */
-        private record TuningResult(String paramsDescription, double accuracy, double precision, double recall, double f1Score) implements Comparable<TuningResult> {
+        private record TuningResult(String paramsDescription, double accuracy, double precision, double recall, double f1Score, double extraAccuracy) implements Comparable<TuningResult> {
 
         @Override
             public int compareTo(TuningResult other) {
@@ -129,11 +141,11 @@ public class HyperparameterTuner {
 
             @Override
             public String toString() {
-                return String.format("%d Parameters: [%s] -> Accuracy: %.2f%%, Precision: %.4f, Recall: %.4f, F1-Score: %.4f",
+                String base = String.format("Seed: %d, Parameters: [%s] -> Accuracy: %.2f%%, Precision: %.4f, Recall: %.4f, F1-Score: %.4f",
                         MLP23.SEED,
-                        paramsDescription, // Topology, Functions, LR, Momentum
-                        accuracy,
-                        precision, recall, f1Score);
+                        paramsDescription, accuracy, precision, recall, f1Score);
+                // Adiciona a acurácia extra apenas se tiver sido calculada (não é 0.0)
+                return extraAccuracy > 0.0 ? base + String.format(", Extra_Acc: %.2f%%", extraAccuracy) : base;
             }
         }
 
@@ -166,18 +178,18 @@ public class HyperparameterTuner {
                 if (topology.length - 1 != functions.length) continue;
                 for (double lr : learningRates) {
                     for (double momentum : momentums) {
-                        String paramsDescription = String.format(
-                                "Topology: %s, Functions: %s, LR: %.4f, Momentum: %.2f",
-                                Arrays.toString(topology), getFunctionNames(functions), lr, momentum
-                        );
+                        for (double l2Lambda : l2Lambdas) { // Novo loop para L2
+                            String paramsDescription = String.format(
+                                    "Topology: %s, Functions: %s, LR: %.4f, Momentum: %.2f, L2: %.4f",
+                                    Arrays.toString(topology), getFunctionNames(functions), lr, momentum, l2Lambda
+                            );
 
-                        // Se a combinação já foi testada, salta-a.
-                        if (completedTrials.contains(paramsDescription)) {
-                            continue;
+                            // Se a combinação já foi testada, salta-a.
+                            if (completedTrials.contains(paramsDescription)) {
+                                continue;
+                            }
+                            tasks.add(() -> runTrial(paramsDescription, topology, functions, lr, momentum, l2Lambda, SEED));
                         }
-
-                        // Create a task for the current combination.
-                        tasks.add(() -> runTrial(paramsDescription, topology, functions, lr, momentum));
                     }
                 }
             }
@@ -215,11 +227,11 @@ public class HyperparameterTuner {
                     results.add(trialResult);
 
                     // Guarda o resultado imediatamente, mas apenas se a acurácia for superior a 90%.
-                    if (trialResult.accuracy > 96.0) { // Limiar de exemplo
+                    if (trialResult.accuracy > 96) { // Limiar de exemplo
                         saveResult(trialResult); // Salva a linha completa no log
                         System.out.printf(">> Completed trial %d/%d. Result saved: Accuracy: %.2f%%, F1: %.4f\n", (i + 1), tasks.size(), trialResult.accuracy, trialResult.f1Score);
                     } else {
-                        System.out.printf(">> Completed trial %d/%d. Accuracy <= 96%% (%.2f%%). Result ignored.\n", (i + 1), tasks.size(), trialResult.accuracy);
+                        System.out.printf(">> Completed trial %d/%d. Accuracy < 95%% (%.2f%%). Result ignored.\n", (i + 1), tasks.size(), trialResult.accuracy);
                     }
 
                 } catch (CancellationException e) {
@@ -269,35 +281,106 @@ public class HyperparameterTuner {
      * <p>
      * This method orchestrates one complete experiment by:
      * <ol>
-     *   <li>Instantiating a {@link GpuMLP23} trainer with the specified configuration.</li>
+     *   <li>Instantiating a trainer with the specified configuration.</li>
      *   <li>Executing the training process using the full training dataset.</li>
      *   <li>Evaluating the trained model against the test dataset to calculate its performance.</li>
      * </ol>
      *
      * @return A {@link TuningResult} object containing the parameters and final validation error.
      */
-    private TuningResult runTrial(String paramsDescription, int[] topology, IDifferentiableFunction[] functions, double lr, double momentum) {
+    private TuningResult runTrial(String paramsDescription, int[] topology, IDifferentiableFunction[] functions, double lr, double momentum, double l2Lambda, int seed) {
         try {
-            System.out.println("--- Testing combination: " + paramsDescription + " ---");
+            System.out.printf("--- Testing combination (Seed: %d): %s ---\n", seed, paramsDescription);
 
             // --- CPU-BASED TRIAL ---
             // Carrega os dados para cada trial para garantir isolamento entre threads.
-            DataHandler dataHandler = new DataHandler(SEED, DataHandler.NormalizationType.MIN_MAX);
+            DataHandler dataHandler = new DataHandler(seed, DataHandler.NormalizationType.MIN_MAX);
 
             // Instancia o treinador MLP23 com os hiperparâmetros da iteração atual.
-            MLP23 trainer = new MLP23(topology, functions, lr, momentum, this.epochs);
-            trainer.train(dataHandler.getTrainInputs(), dataHandler.getTrainOutputs(), dataHandler.getTestInputs(), dataHandler.getTestOutputs());
+            MLP23 trainer = new MLP23(topology, functions, lr, momentum, l2Lambda, this.epochs, seed);
+            trainer.getMLP().train(dataHandler.getTrainInputs(), dataHandler.getTrainOutputs(), dataHandler.getTestInputs(), dataHandler.getTestOutputs(), lr, this.epochs, momentum, l2Lambda);
 
             // --- TEST THE TRAINED NETWORK ---
-            MLP23.TestMetrics metrics = trainer.test(dataHandler.getTestInputs(), dataHandler.getTestOutputs());
-            System.out.printf("--- Finished trial: [%s] -> Accuracy: %.2f%%, Precision: %.4f, Recall: %.4f, F1-Score: %.4f ---\n", paramsDescription, metrics.accuracy(), metrics.precision(), metrics.recall(), metrics.f1Score());
-            return new TuningResult(paramsDescription, metrics.accuracy(), metrics.precision(), metrics.recall(), metrics.f1Score());
+            MLP23.TestMetrics metrics = trainer.test(dataHandler.getTestInputs(), dataHandler.getTestOutputs()); // Teste padrão
+
+            double extraAccuracy = 0.0;
+            // Se o modelo for promissor, submete-o a um teste mais rigoroso.
+            if (metrics.accuracy() >= 99.50) {
+                System.out.println("-> Accuracy > 99.50%. Running extra validation...");
+                Matrix[] extraTestData = DataHandler.loadExtraTestData();
+                MLP23.TestMetrics extraMetrics = trainer.test(extraTestData[0], extraTestData[1]);
+                extraAccuracy = extraMetrics.accuracy();
+                System.out.printf("-> Extra Test Accuracy: %.2f%%\n", extraAccuracy);
+            }
+
+            System.out.printf("--- Finished trial (Seed: %d): [%s] -> Accuracy: %.2f%%, F1-Score: %.4f ---\n", seed, paramsDescription, metrics.accuracy(), metrics.f1Score());
+            return new TuningResult(paramsDescription, metrics.accuracy(), metrics.precision(), metrics.recall(), metrics.f1Score(), extraAccuracy);
         } catch (Exception e) {
             // Use e.toString() for a more descriptive message, as e.getMessage() can be null.
             System.err.printf("--- FAILED trial: [%s] -> Exception: %s. Likely a data loading issue. ---\n", paramsDescription, e.toString());
             // Retorna um resultado com 0 de acurácia e F1-Score para marcar a tentativa como falhada.
-            return new TuningResult(paramsDescription, 0.0, 0.0, 0.0, 0.0);
+            return new TuningResult(paramsDescription, 0.0, 0.0, 0.0, 0.0, 0.0);
         }
+    }
+
+    /**
+     * Tests a single hyperparameter configuration across multiple seeds to find the most robust one.
+     *
+     * @param topology The network topology to test.
+     * @param functions The activation functions to use.
+     * @param lr The learning rate.
+     * @param momentum The momentum.
+     * @param seedsToTest An array of seeds to evaluate.
+     */
+    public void findBestSeedForConfig(int[] topology, IDifferentiableFunction[] functions, double lr, double momentum, double l2Lambda, int[] seedsToTest) {
+        String paramsDescription = String.format(
+                "Topology: %s, Functions: %s, LR: %.4f, Momentum: %.2f, L2: %.4f",
+                Arrays.toString(topology), getFunctionNames(functions), lr, momentum, l2Lambda
+        );
+
+        System.out.printf("\n--- Finding Best Seed for Configuration: %s ---\n", paramsDescription);
+        System.out.printf("Testing across %d different seeds.\n\n", seedsToTest.length);
+
+        List<Callable<TuningResult>> tasks = new ArrayList<>();
+        for (int seed : seedsToTest) {
+            tasks.add(() -> runTrial(paramsDescription, topology, functions, lr, momentum, l2Lambda, seed));
+        }
+
+        final int numThreads = Math.max(1, Runtime.getRuntime().availableProcessors() - 2);
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        CompletionService<TuningResult> completionService = new ExecutorCompletionService<>(executor);
+        List<TuningResult> results = new ArrayList<>();
+
+        for (Callable<TuningResult> task : tasks) {
+            completionService.submit(task);
+        }
+
+        try {
+            for (int i = 0; i < tasks.size(); i++) {
+                try {
+                    Future<TuningResult> future = completionService.take();
+                    results.add(future.get());
+                } catch (ExecutionException e) {
+                    System.err.println("A seed trial failed: " + e.getCause().getMessage());
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("Seed search was interrupted.");
+        } finally {
+            executor.shutdown();
+        }
+
+        Collections.sort(results);
+
+        System.out.println("\n\n--- === Seed Search Summary === ---");
+        results.forEach(System.out::println);
+
+        if (!results.isEmpty()) {
+            System.out.println("\n--- BEST SEED FOUND ---");
+            System.out.println(results.getFirst());
+        }
+        System.out.println("--- ========================= ---");
     }
 
     /**
@@ -309,7 +392,7 @@ public class HyperparameterTuner {
         try (BufferedReader reader = new BufferedReader(new FileReader(RESULTS_FILE))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if (line.startsWith("Parameters: [")) {
+                if (line.contains("Parameters: [")) {
                     try {
                         String params = line.substring(line.indexOf('[') + 1, line.indexOf(']'));
                         completed.add(params);
@@ -359,6 +442,7 @@ public class HyperparameterTuner {
             double precision = 0.0;
             double recall = 0.0;
             double f1Score = 0.0;
+            double extraAccuracy = 0.0;
 
             if (line.contains("Accuracy: ")) {
                 String accString = line.substring(line.indexOf("Accuracy: ") + 10, line.indexOf('%'));
@@ -376,17 +460,33 @@ public class HyperparameterTuner {
                 String f1String = line.substring(line.indexOf("F1-Score: ") + 10).trim();
                 f1Score = Double.parseDouble(f1String.replace(',', '.'));
             }
-            return new TuningResult(params, accuracy, precision, recall, f1Score);
+            if (line.contains("Extra_Acc: ")) {
+                String extraAccString = line.substring(line.indexOf("Extra_Acc: ") + 11, line.lastIndexOf('%'));
+                extraAccuracy = Double.parseDouble(extraAccString.replace(',', '.'));
+            }
+
+            return new TuningResult(params, accuracy, precision, recall, f1Score, extraAccuracy);
         } catch (Exception e) { // Captura exceções mais genéricas (e.g., NumberFormatException)
-            return new TuningResult(line, 0.0, 0.0, 0.0, 0.0); // Retorna um resultado dummy em caso de falha
+            return new TuningResult(line, 0.0, 0.0, 0.0, 0.0, 0.0); // Retorna um resultado dummy em caso de falha
         }
     }
 
+    private final boolean findSeed = true;
     /**
      * Entry point to run the optimizer.
      */
     public static void main(String[] args) {
         HyperparameterTuner tuner = new HyperparameterTuner();
-        tuner.runGridSearch();
+        if(tuner.findSeed)
+        {
+            int[] seedsToTest = { 8,1,2,3,4,5,6,7,9,10,11,12,13,14,15,16,17,18,19,20  }; // Exemplo de seeds
+            tuner.findBestSeedForConfig(new int[]{400, 4, 1}, new IDifferentiableFunction[]{new TanH(), new Sigmoid()}, 0.001, 0.99, 0.0, seedsToTest);
+            // 0.0005 0.99 topologia 4 sigmoid sigmoid
+
+        }
+        else
+        // Cenário 1: Executar a busca em grade completa
+           tuner.runGridSearch();
+
     }
 }

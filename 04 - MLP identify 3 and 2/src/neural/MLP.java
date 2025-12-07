@@ -20,13 +20,12 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * <h3>Advanced Training Features</h3>
  * <p>
- * The {@link #train(Matrix, Matrix, Matrix, Matrix, double, int, double)} method implements a sophisticated
+ * The {@link #(Matrix, Matrix, Matrix, Matrix, double, int, double)} method implements a sophisticated
  * training loop that includes mini-batch processing, asynchronous validation, best-model checkpointing,
  * and early stopping. This allows for efficient and robust training, preventing overfitting and ensuring
  * the best-performing model is retained.
  * </p>
  *
- * @see GpuMLP A direct counterpart to this class, optimized for GPU acceleration using the ND4J library.
  * @author hdaniel@ualg.pt, Brandon Mejia
  * @version 202511052038
  */
@@ -83,7 +82,7 @@ public class MLP implements Serializable {
 
 
     // back propagation
-    private Matrix backPropagation(Matrix X, Matrix y, double lr, double momentum) {
+    private Matrix backPropagation(Matrix X, Matrix y, double lr, double momentum, double l2Lambda) {
         Matrix Eout = null;
         Matrix e = null;
         Matrix delta = null;
@@ -110,8 +109,11 @@ public class MLP implements Serializable {
             // delta = e .* dy
             delta = e.mult(dy);
 
-            // Calcula a atualização com momentum
-            Matrix wUpdate = yp[l].transpose().dot(delta).mult(lr).add(prevWUpdates[l].mult(momentum));
+            // Calcula a atualização com momentum e regularização L2 (Weight Decay)
+            // O gradiente do erro é yp[l]^T * delta
+            // O gradiente da regularização L2 é l2Lambda * w[l]
+            Matrix grad = yp[l].transpose().dot(delta);
+            Matrix wUpdate = grad.add(w[l].mult(l2Lambda)).mult(lr).add(prevWUpdates[l].mult(momentum));
             Matrix bUpdate = delta.sumColumns().mult(lr).add(prevBUpdates[l].mult(momentum));
 
             w[l] = w[l].add(wUpdate);
@@ -155,46 +157,6 @@ public class MLP implements Serializable {
         return clone;
     }
 
-    public double[] train(Matrix X, Matrix y, double learningRate, int epochs,double momentum) 
-    {
-        int nSamples = X.rows();
-        double[] mse = new double[epochs];
-
-        for (int epoch=0; epoch < epochs; epoch++) 
-        {
-            predict(X);
-            //backward propagation
-            Matrix e = backPropagation(X, y, learningRate, momentum);
-            //mse
-            mse[epoch] = e.dot(e.transpose()).get(0, 0) / nSamples;
-
-            // Print progress
-            if ((epoch + 1) % 50 == 0) {
-                System.out.printf("Epoch %d/%d, MSE: %.50f\n", epoch + 1, epochs, mse[epoch]);
-            }
-        }
-        return mse;
-    }
-    public double[] train(Matrix X, Matrix y, double learningRate, int epochs) {
-        int nSamples = X.rows();
-        double[] mse = new double[epochs];
-        double momentum = 0.7;
-
-        for (int epoch=0; epoch < epochs; epoch++) {
-            predict(X);
-            //backward propagation
-            Matrix e = backPropagation(X, y, learningRate, momentum);
-            //mse
-            mse[epoch] = e.dot(e.transpose()).get(0, 0) / nSamples;
-
-            // Print progress
-            if ((epoch + 1) % 50 == 0) {
-                //System.out.printf("Epoch %d/%d, MSE: %.50f\n", epoch + 1, epochs, mse[epoch]);
-            }
-        }
-        return mse;
-    }
-
     /**
      * Trains the MLP model using training and validation datasets, incorporating advanced techniques.
      * <p>
@@ -213,12 +175,12 @@ public class MLP implements Serializable {
      * @param momentum     The momentum factor for weight updates.
      * @return The best validation error (MSE) achieved during training.
      */
-    public double train(Matrix trainInputs, Matrix trainOutputs, Matrix valInputs, Matrix valOutputs, double lr, int epochs, double momentum)
+    public double train(Matrix trainInputs, Matrix trainOutputs, Matrix valInputs, Matrix valOutputs, double lr, int epochs, double momentum, double l2Lambda)
     {
         // --- CONFIGURAÇÕES ---
-        int batchSize = 64;
-        final int PATIENCE_EPOCHS = 1000;
-        final int VALIDATION_FREQUENCY = 10;
+        int batchSize = 32;// melhorou um pouco
+        final int PATIENCE_EPOCHS = 500;
+        final int VALIDATION_FREQUENCY = 5;
 
         // --- INICIALIZAÇÃO ---
         ExecutorService validationExecutor = Executors.newSingleThreadExecutor();
@@ -228,8 +190,14 @@ public class MLP implements Serializable {
         final AtomicReference<MLP> bestMlp = new AtomicReference<>();
         int epochsSinceLastImprovement = 0;
         int totalSamples = trainInputs.rows();
+        
+        // --- AGENDADOR DE TAXA DE APRENDIZAGEM (LEARNING RATE SCHEDULER) ---
+        final double initialLr = lr; // Guarda a taxa de aprendizagem inicial
+        // O decayRate controla a velocidade com que a taxa de aprendizagem diminui.
+        final double decayRate = initialLr / epochs;
 
         for (int epoch = 1; epoch <= epochs; epoch++) {
+            final double currentLr = initialLr / (1 + decayRate * epoch);
             // --- LOOP DE MINI-BATCHES ---
             for (int i = 0; i < totalSamples; i += batchSize) {
                 int end = Math.min(i + batchSize, totalSamples);
@@ -240,7 +208,7 @@ public class MLP implements Serializable {
 
                 // Treinar apenas neste lote
                 this.predict(batchX);
-                this.backPropagation(batchX, batchY, lr, momentum);
+                this.backPropagation(batchX, batchY, currentLr, momentum, l2Lambda);
             }
 
             // --- VALIDAÇÃO ASSÍNCRONA ---
@@ -251,7 +219,7 @@ public class MLP implements Serializable {
 
                     // Imprime o progresso em intervalos regulares para feedback visual
                     if ((epoch - VALIDATION_FREQUENCY) > 0 && (epoch - VALIDATION_FREQUENCY) % 100 == 0) {
-                        //System.out.printf("Época: %-5d | LR: %.8f | (MSE): %.6f\n", epoch - VALIDATION_FREQUENCY, lr, currentValidationError);
+                        System.out.printf("Época: %-5d | LR: %.8f | (MSE): %.6f\n", epoch - VALIDATION_FREQUENCY, currentLr, currentValidationError);
                     }
 
                         // Verifica se o modelo melhorou

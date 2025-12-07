@@ -1,157 +1,44 @@
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,90] -> Accuracy: 95,86%, F1-Score: 0,959
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,60] -> Accuracy: 94,73%, F1-Score: 0,946
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,50] -> Accuracy: 94,51%, F1-Score: 0,944
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,70] -> Accuracy: 95,74%, F1-Score: 0,957
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,90] -> Accuracy: 96,06%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0300, Momentum: 0,80] -> Accuracy: 96,10%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,70] -> Accuracy: 94,81%, F1-Score: 0,947
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,80] -> Accuracy: 95,84%, F1-Score: 0,958
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,60] -> Accuracy: 94,83%, F1-Score: 0,947
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0500, Momentum: 0,70] -> Accuracy: 96,10%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,90] -> Accuracy: 93,59%, F1-Score: 0,935
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,80] -> Accuracy: 95,42%, F1-Score: 0,954
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,80] -> Accuracy: 96,16%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,60] -> Accuracy: 95,89%, F1-Score: 0,959
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,90] -> Accuracy: 93,96%, F1-Score: 0,939
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,70] -> Accuracy: 95,22%, F1-Score: 0,951
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,60] -> Accuracy: 95,32%, F1-Score: 0,953
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0300, Momentum: 0,90] -> Accuracy: 92,03%, F1-Score: 0,917
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,70] -> Accuracy: 95,94%, F1-Score: 0,959
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,50] -> Accuracy: 95,97%, F1-Score: 0,960
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0500, Momentum: 0,80] -> Accuracy: 95,90%, F1-Score: 0,959
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0300, Momentum: 0,70] -> Accuracy: 96,19%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0300, Momentum: 0,80] -> Accuracy: 96,14%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0500, Momentum: 0,90] -> Accuracy: 90,71%, F1-Score: 0,901
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,50] -> Accuracy: 95,40%, F1-Score: 0,954
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0500, Momentum: 0,70] -> Accuracy: 96,06%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0300, Momentum: 0,60] -> Accuracy: 96,26%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0300, Momentum: 0,50] -> Accuracy: 96,22%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0400, Momentum: 0,80] -> Accuracy: 96,10%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0500, Momentum: 0,60] -> Accuracy: 96,16%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0400, Momentum: 0,70] -> Accuracy: 96,05%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0050, Momentum: 0,80] -> Accuracy: 94,69%, F1-Score: 0,946
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0050, Momentum: 0,60] -> Accuracy: 92,91%, F1-Score: 0,925
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0400, Momentum: 0,50] -> Accuracy: 96,18%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0500, Momentum: 0,50] -> Accuracy: 96,30%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0400, Momentum: 0,60] -> Accuracy: 96,24%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0050, Momentum: 0,90] -> Accuracy: 94,50%, F1-Score: 0,943
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0050, Momentum: 0,50] -> Accuracy: 92,80%, F1-Score: 0,924
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0050, Momentum: 0,70] -> Accuracy: 95,09%, F1-Score: 0,950
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0010, Momentum: 0,90] -> Accuracy: 91,88%, F1-Score: 0,913
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,60] -> Accuracy: 95,99%, F1-Score: 0,960
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,80] -> Accuracy: 96,19%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,90] -> Accuracy: 96,44%, F1-Score: 0,965
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,70] -> Accuracy: 96,21%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,70] -> Accuracy: 96,29%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,50] -> Accuracy: 95,82%, F1-Score: 0,959
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,60] -> Accuracy: 95,33%, F1-Score: 0,954
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,90] -> Accuracy: 93,42%, F1-Score: 0,933
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0300, Momentum: 0,90] -> Accuracy: 92,89%, F1-Score: 0,927
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0300, Momentum: 0,70] -> Accuracy: 96,09%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0300, Momentum: 0,50] -> Accuracy: 95,39%, F1-Score: 0,954
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0300, Momentum: 0,80] -> Accuracy: 96,24%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0500, Momentum: 0,80] -> Accuracy: 93,82%, F1-Score: 0,937
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0300, Momentum: 0,60] -> Accuracy: 96,19%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0500, Momentum: 0,70] -> Accuracy: 96,06%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0030, Momentum: 0,60] -> Accuracy: 91,68%, F1-Score: 0,911
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0500, Momentum: 0,60] -> Accuracy: 96,05%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0400, Momentum: 0,70] -> Accuracy: 96,05%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0400, Momentum: 0,80] -> Accuracy: 96,10%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0400, Momentum: 0,50] -> Accuracy: 95,65%, F1-Score: 0,957
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0400, Momentum: 0,60] -> Accuracy: 96,06%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0500, Momentum: 0,50] -> Accuracy: 96,29%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0020, Momentum: 0,90] -> Accuracy: 95,84%, F1-Score: 0,958
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0030, Momentum: 0,90] -> Accuracy: 95,33%, F1-Score: 0,953
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0050, Momentum: 0,80] -> Accuracy: 95,96%, F1-Score: 0,960
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0050, Momentum: 0,90] -> Accuracy: 96,49%, F1-Score: 0,965
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0030, Momentum: 0,90] -> Accuracy: 96,43%, F1-Score: 0,965
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0020, Momentum: 0,80] -> Accuracy: 94,48%, F1-Score: 0,943
-8 Parameters: [Topology: [400, 1, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,80] -> Accuracy: 96,25%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0030, Momentum: 0,70] -> Accuracy: 94,38%, F1-Score: 0,942
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0030, Momentum: 0,80] -> Accuracy: 94,95%, F1-Score: 0,948
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,90] -> Accuracy: 96,29%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,80] -> Accuracy: 96,42%, F1-Score: 0,964
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0300, Momentum: 0,70] -> Accuracy: 96,15%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,60] -> Accuracy: 96,08%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0300, Momentum: 0,60] -> Accuracy: 96,05%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0300, Momentum: 0,50] -> Accuracy: 96,02%, F1-Score: 0,960
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0300, Momentum: 0,80] -> Accuracy: 96,44%, F1-Score: 0,965
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,50] -> Accuracy: 96,01%, F1-Score: 0,960
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,70] -> Accuracy: 96,48%, F1-Score: 0,965
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0500, Momentum: 0,90] -> Accuracy: 96,19%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0500, Momentum: 0,70] -> Accuracy: 96,12%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0500, Momentum: 0,80] -> Accuracy: 96,23%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0400, Momentum: 0,80] -> Accuracy: 96,27%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0500, Momentum: 0,60] -> Accuracy: 96,12%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0400, Momentum: 0,70] -> Accuracy: 96,15%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0500, Momentum: 0,50] -> Accuracy: 96,13%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0400, Momentum: 0,50] -> Accuracy: 96,02%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0400, Momentum: 0,60] -> Accuracy: 96,05%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 1, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,90] -> Accuracy: 96,30%, F1-Score: 0,964
-8 Parameters: [Topology: [400, 1, 1], Functions: Sigmoid, Sigmoid, LR: 0,0400, Momentum: 0,60] -> Accuracy: 96,21%, F1-Score: 0,963
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0100, Momentum: 0,80, L2: 0,0000] -> Accuracy: 97,38%, Precision: 0,9588, Recall: 0,9900, F1-Score: 0,9742
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,1000, Momentum: 0,60, L2: 0,0000] -> Accuracy: 96,75%, Precision: 0,9629, Recall: 0,9725, F1-Score: 0,9677
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0010, Momentum: 0,90, L2: 0,0000] -> Accuracy: 96,63%, Precision: 0,9770, Recall: 0,9550, F1-Score: 0,9659
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0100, Momentum: 0,60, L2: 0,0000] -> Accuracy: 97,75%, Precision: 0,9681, Recall: 0,9875, F1-Score: 0,9777
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0100, Momentum: 0,50, L2: 0,0000] -> Accuracy: 97,00%, Precision: 0,9563, Recall: 0,9850, F1-Score: 0,9704
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,1000, Momentum: 0,50, L2: 0,0000] -> Accuracy: 97,25%, Precision: 0,9632, Recall: 0,9825, F1-Score: 0,9728
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0100, Momentum: 0,70, L2: 0,0000] -> Accuracy: 97,75%, Precision: 0,9659, Recall: 0,9900, F1-Score: 0,9778
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0100, Momentum: 0,90, L2: 0,0000] -> Accuracy: 96,63%, Precision: 0,9430, Recall: 0,9925, F1-Score: 0,9671
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,1000, Momentum: 0,80, L2: 0,0000] -> Accuracy: 96,75%, Precision: 0,9583, Recall: 0,9775, F1-Score: 0,9678
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,60, L2: 0,0000] -> Accuracy: 97,50%, Precision: 0,9822, Recall: 0,9675, F1-Score: 0,9748
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0010, Momentum: 0,50, L2: 0,0000] -> Accuracy: 96,63%, Precision: 0,9698, Recall: 0,9625, F1-Score: 0,9661
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,50, L2: 0,0000] -> Accuracy: 97,88%, Precision: 0,9898, Recall: 0,9675, F1-Score: 0,9785
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,80, L2: 0,0000] -> Accuracy: 97,13%, Precision: 0,9772, Recall: 0,9650, F1-Score: 0,9711
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,70, L2: 0,0000] -> Accuracy: 97,25%, Precision: 0,9821, Recall: 0,9625, F1-Score: 0,9722
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0010, Momentum: 0,70, L2: 0,0000] -> Accuracy: 97,50%, Precision: 0,9703, Recall: 0,9800, F1-Score: 0,9751
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0010, Momentum: 0,60, L2: 0,0000] -> Accuracy: 96,88%, Precision: 0,9676, Recall: 0,9700, F1-Score: 0,9688
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0010, Momentum: 0,80, L2: 0,0000] -> Accuracy: 98,00%, Precision: 0,9800, Recall: 0,9800, F1-Score: 0,9800
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0010, Momentum: 0,90, L2: 0,0000] -> Accuracy: 98,38%, Precision: 0,9850, Recall: 0,9825, F1-Score: 0,9837
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,1000, Momentum: 0,50, L2: 0,0000] -> Accuracy: 96,63%, Precision: 0,9494, Recall: 0,9850, F1-Score: 0,9669
 
 
 
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0100, Momentum: 0,90] -> Accuracy: 96,05%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,80] -> Accuracy: 96,09%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,90] -> Accuracy: 96,05%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,70] -> Accuracy: 96,05%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0100, Momentum: 0,80] -> Accuracy: 96,19%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0300, Momentum: 0,70] -> Accuracy: 96,12%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0100, Momentum: 0,70] -> Accuracy: 96,21%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0400, Momentum: 0,70] -> Accuracy: 96,18%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0400, Momentum: 0,80] -> Accuracy: 96,13%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0020, Momentum: 0,90] -> Accuracy: 96,10%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0400, Momentum: 0,90] -> Accuracy: 96,05%, F1-Score: 0,961
-
-
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0300, Momentum: 0,80] -> Accuracy: 96,34%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,90] -> Accuracy: 96,42%, F1-Score: 0,964
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0100, Momentum: 0,80] -> Accuracy: 96,06%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0100, Momentum: 0,90] -> Accuracy: 96,11%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,80] -> Accuracy: 96,27%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0300, Momentum: 0,90] -> Accuracy: 96,40%, F1-Score: 0,965
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0300, Momentum: 0,60] -> Accuracy: 96,44%, F1-Score: 0,965
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0500, Momentum: 0,90] -> Accuracy: 96,16%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0100, Momentum: 0,70] -> Accuracy: 96,19%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0500, Momentum: 0,80] -> Accuracy: 96,37%, F1-Score: 0,964
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,60] -> Accuracy: 96,31%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0500, Momentum: 0,60] -> Accuracy: 96,10%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,70] -> Accuracy: 96,32%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0500, Momentum: 0,50] -> Accuracy: 96,05%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0400, Momentum: 0,60] -> Accuracy: 96,03%, F1-Score: 0,960
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0500, Momentum: 0,70] -> Accuracy: 96,43%, F1-Score: 0,964
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0300, Momentum: 0,70] -> Accuracy: 96,43%, F1-Score: 0,965
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0400, Momentum: 0,80] -> Accuracy: 96,36%, F1-Score: 0,964
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0100, Momentum: 0,60] -> Accuracy: 96,19%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0400, Momentum: 0,90] -> Accuracy: 96,29%, F1-Score: 0,964
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0400, Momentum: 0,50] -> Accuracy: 96,04%, F1-Score: 0,960
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,50] -> Accuracy: 96,29%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0400, Momentum: 0,70] -> Accuracy: 96,51%, F1-Score: 0,965
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0100, Momentum: 0,50] -> Accuracy: 96,13%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,80] -> Accuracy: 96,31%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,90] -> Accuracy: 96,43%, F1-Score: 0,965
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0100, Momentum: 0,80] -> Accuracy: 96,00%, F1-Score: 0,960
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,70] -> Accuracy: 96,39%, F1-Score: 0,964
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0300, Momentum: 0,80] -> Accuracy: 96,11%, F1-Score: 0,961
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,90] -> Accuracy: 96,47%, F1-Score: 0,965
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,60] -> Accuracy: 96,44%, F1-Score: 0,965
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0300, Momentum: 0,60] -> Accuracy: 96,32%, F1-Score: 0,964
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0030, Momentum: 0,90] -> Accuracy: 96,39%, F1-Score: 0,964
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0300, Momentum: 0,70] -> Accuracy: 96,26%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0050, Momentum: 0,90] -> Accuracy: 96,46%, F1-Score: 0,965
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0500, Momentum: 0,80] -> Accuracy: 96,01%, F1-Score: 0,960
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0300, Momentum: 0,50] -> Accuracy: 96,21%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0200, Momentum: 0,50] -> Accuracy: 96,38%, F1-Score: 0,964
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0500, Momentum: 0,50] -> Accuracy: 96,18%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0500, Momentum: 0,60] -> Accuracy: 96,24%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0400, Momentum: 0,60] -> Accuracy: 96,20%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0400, Momentum: 0,50] -> Accuracy: 96,27%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0050, Momentum: 0,90] -> Accuracy: 96,24%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0050, Momentum: 0,80] -> Accuracy: 96,26%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0050, Momentum: 0,70] -> Accuracy: 96,25%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0010, Momentum: 0,90] -> Accuracy: 96,00%, F1-Score: 0,960
-8 Parameters: [Topology: [400, 1, 1], Functions: Sigmoid, Sigmoid, LR: 0,0100, Momentum: 0,90] -> Accuracy: 96,26%, F1-Score: 0,963
-8 Parameters: [Topology: [400, 1, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,80] -> Accuracy: 96,15%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 1, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,70] -> Accuracy: 96,17%, F1-Score: 0,962
-8 Parameters: [Topology: [400, 1, 1], Functions: Sigmoid, Sigmoid, LR: 0,0200, Momentum: 0,90] -> Accuracy: 96,29%, F1-Score: 0,964
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0050, Momentum: 0,99, L2: 0,0000] -> Accuracy: 98,00%, Precision: 0,9683, Recall: 0,9925, F1-Score: 0,9802
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0010, Momentum: 0,99, L2: 0,0000] -> Accuracy: 98,63%, Precision: 0,9899, Recall: 0,9825, F1-Score: 0,9862
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0070, Momentum: 0,99, L2: 0,0000] -> Accuracy: 97,50%, Precision: 0,9897, Recall: 0,9600, F1-Score: 0,9746
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0050, Momentum: 0,70, L2: 0,0000] -> Accuracy: 97,13%, Precision: 0,9586, Recall: 0,9850, F1-Score: 0,9716
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0050, Momentum: 0,60, L2: 0,0000] -> Accuracy: 96,75%, Precision: 0,9539, Recall: 0,9825, F1-Score: 0,9680
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0001, Momentum: 0,99, L2: 0,0000] -> Accuracy: 96,38%, Precision: 0,9535, Recall: 0,9750, F1-Score: 0,9642
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0050, Momentum: 0,80, L2: 0,0000] -> Accuracy: 97,75%, Precision: 0,9704, Recall: 0,9850, F1-Score: 0,9777
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0070, Momentum: 0,60, L2: 0,0000] -> Accuracy: 97,00%, Precision: 0,9563, Recall: 0,9850, F1-Score: 0,9704
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0070, Momentum: 0,70, L2: 0,0000] -> Accuracy: 97,25%, Precision: 0,9587, Recall: 0,9875, F1-Score: 0,9729
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0050, Momentum: 0,99, L2: 0,0000] -> Accuracy: 98,00%, Precision: 0,9848, Recall: 0,9750, F1-Score: 0,9799
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0050, Momentum: 0,80, L2: 0,0000] -> Accuracy: 96,50%, Precision: 0,9650, Recall: 0,9650, F1-Score: 0,9650
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0050, Momentum: 0,70, L2: 0,0000] -> Accuracy: 96,88%, Precision: 0,9676, Recall: 0,9700, F1-Score: 0,9688
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0070, Momentum: 0,80, L2: 0,0000] -> Accuracy: 97,00%, Precision: 0,9700, Recall: 0,9700, F1-Score: 0,9700
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: Sigmoid, Sigmoid, LR: 0,0070, Momentum: 0,80, L2: 0,0000] -> Accuracy: 97,25%, Precision: 0,9543, Recall: 0,9925, F1-Score: 0,9730
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0050, Momentum: 0,60, L2: 0,0000] -> Accuracy: 96,75%, Precision: 0,9539, Recall: 0,9825, F1-Score: 0,9680
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0010, Momentum: 0,99, L2: 0,0000] -> Accuracy: 98,75%, Precision: 0,9924, Recall: 0,9825, F1-Score: 0,9874
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0070, Momentum: 0,60, L2: 0,0000] -> Accuracy: 97,38%, Precision: 0,9656, Recall: 0,9825, F1-Score: 0,9740
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0070, Momentum: 0,70, L2: 0,0000] -> Accuracy: 97,38%, Precision: 0,9797, Recall: 0,9675, F1-Score: 0,9736
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0001, Momentum: 0,99, L2: 0,0000] -> Accuracy: 98,38%, Precision: 0,9850, Recall: 0,9825, F1-Score: 0,9837
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0010, Momentum: 0,70, L2: 0,0000] -> Accuracy: 97,50%, Precision: 0,9703, Recall: 0,9800, F1-Score: 0,9751
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0010, Momentum: 0,60, L2: 0,0000] -> Accuracy: 96,88%, Precision: 0,9676, Recall: 0,9700, F1-Score: 0,9688
+Seed: 8, Parameters: [Topology: [400, 4, 1], Functions: TanH, Sigmoid, LR: 0,0010, Momentum: 0,80, L2: 0,0000] -> Accuracy: 98,00%, Precision: 0,9800, Recall: 0,9800, F1-Score: 0,9800

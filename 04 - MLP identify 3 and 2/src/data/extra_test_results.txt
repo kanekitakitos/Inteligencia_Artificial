@@ -1,0 +1,5 @@
+--- Resumo das Métricas (Conjunto Extra) ---
+Acurácia Final: 99.63%
+Precisão: 0.9975
+Recall: 0.9950
+F1-Score: 0.9962

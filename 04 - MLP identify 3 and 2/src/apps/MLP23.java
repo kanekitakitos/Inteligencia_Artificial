@@ -3,56 +3,45 @@ package apps;
 import math.Matrix;
 import neural.MLP;
 import neural.activation.IDifferentiableFunction;
+
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import neural.activation.Sigmoid;
 import neural.activation.TanH;
 
 /**
- * A factory and trainer for a specific Multi-Layer Perceptron (MLP) model designed to classify handwritten digits '2' and '3'. This class encapsulates a pre-defined MLP configuration and acts as a high-level trainer.
+ * A factory and trainer for a Multi-Layer Perceptron (MLP) model designed to classify handwritten digits '2' and '3'.
  * <p>
- * It simplifies the process of preparing and training the model by orchestrating the {@link DataHandler} for data loading and the {@link MLP} for the core training execution. The primary training logic, which includes asynchronous validation and best-model checkpointing, is handled by the {@link MLP#train(Matrix, Matrix, Matrix, Matrix, double, int, double)} method. This class serves as a convenient wrapper to instantiate and run that process with a proven configuration.
+ * This class simplifies the process of training and evaluating the model by orchestrating the
+ * {@link DataHandler} for data loading and the {@link MLP} for the core training execution.
+ * It serves as a convenient wrapper to instantiate and run the training process, making it
+ * easy to integrate with hyperparameter search tools like {@link HyperparameterTuner}.
  * </p>
  *
  * <h3>Example Usage</h3>
  * <p>
- * This class is designed to be used programmatically as a factory for a trained model. The following example demonstrates how to use {@code MLP23} to get a trained model and use it for predictions.
+ * This class can be used to train a model with a specific configuration and then evaluate it.
  * </p>
- * <ul>
- *   <li><b>Implementation:</b>
- *      <pre>{@code
- * // 1. Instantiate the trainer factory.
- * MLP23 trainer = new MLP23();
- *
- * // 2. Execute the training process. This loads and processes data automatically.
- * trainer.train();
- *
- * // 3. Retrieve the best-performing model after training.
- * MLP bestModel = trainer.getMLP();
- *
- * // 4. Use the model to make a prediction on a new data sample.
- * // (Assuming 'newImageMatrix' is a 1x400 Matrix).
- * Matrix prediction = bestModel.predict(newImageMatrix);
- * long label = Math.round(prediction.get(0, 0));
- * System.out.println(label == 0 ? "Predicted: 2" : "Predicted: 3");
- *      }</pre>
- *   </li>
- * </ul>
- *
  * <pre>{@code
- * // 1. Instantiate the trainer factory.
- * MLP23 trainer = new MLP23();
+ * // 1. Define the model configuration.
+ * int[] topology = {400, 4, 1};
+ * IDifferentiableFunction[] functions = {new Sigmoid(), new Sigmoid()};
+ * double learningRate = 0.0025;
+ * double momentum = 0.99;
+ * double l2Lambda = 0.0001;
+ * int epochs = 20000;
+ * int seed = 8;
  *
- * // 2. Execute the training process. This loads and processes data automatically.
+ * // 2. Instantiate the trainer.
+ * MLP23 trainer = new MLP23(topology, functions, learningRate, momentum, l2Lambda, epochs, seed);
+ *
+ * // 3. Execute the training process.
  * trainer.train();
  *
- * // 3. Retrieve the best-performing model after training.
+ * // 4. Retrieve the trained model for further use or evaluation.
  * MLP bestModel = trainer.getMLP();
- *
- * // 4. Use the model to make a prediction on a new data sample.
- * // (Assuming 'newImageMatrix' is a 1x400 Matrix).
- * Matrix prediction = bestModel.predict(newImageMatrix);
- * long label = Math.round(prediction.get(0, 0));
- * System.out.println(label == 0 ? "Predicted: 2" : "Predicted: 3");
- * }</pre>
+ *      }</pre>
  *
  * @see MLP
  * @see DataHandler
@@ -69,15 +58,19 @@ public class MLP23
     private final int epochs;
     private final double momentum;
     private final MLP mlp;
-    public static final int SEED = 8; // 2;4;5 5:00 ;7;8 4:21 ;16 4:17
+    private final int seed;
+    private final double l2Lambda;
+    public static final int SEED = 12; // 2;4;5 5:00 ;7;8 4:21 ;16 4:17
 
 
     /**
      * Constructs the MLP trainer with a predefined network topology and activation functions.
+     * This default constructor uses a known good configuration for quick testing.
      */
     public MLP23()
     {
-        this(new int[]{400, 4, 1}, new IDifferentiableFunction[]{new TanH(), new Sigmoid()}, 0.01, 0.9, 30000);
+        // Fornece um valor padrão para l2Lambda (0.0 para desativar a regularização).
+        this(new int[]{400, 4, 1}, new IDifferentiableFunction[]{new TanH(), new Sigmoid()}, 0.001, 0.99, 0.0, 10000, SEED);
     }
 
     /**
@@ -88,17 +81,29 @@ public class MLP23
      * @param functions The activation functions for each layer transition.
      * @param lr The learning rate.
      * @param momentum The momentum factor.
+     * @param l2Lambda The L2 regularization factor (lambda).
      * @param epochs The number of training epochs.
+     * @param seed The seed for random weight initialization.
      */
-    public MLP23(int[] topology, IDifferentiableFunction[] functions, double lr, double momentum, int epochs)
+    public MLP23(int[] topology, IDifferentiableFunction[] functions, double lr, double momentum, double l2Lambda, int epochs, int seed)
     {
         if (topology.length - 1 != functions.length) {
             throw new IllegalArgumentException("The number of activation functions must be one less than the number of layers.");
         }
         this.lr = lr;
         this.momentum = momentum;
+        this.l2Lambda = l2Lambda;
         this.epochs = epochs;
-        this.mlp = new MLP(topology, functions, SEED);
+        this.seed = seed;
+        this.mlp = new MLP(topology, functions, this.seed);
+    }
+
+    /**
+     * @deprecated Use the constructor that explicitly requires a seed and l2Lambda.
+     */
+    @Deprecated
+    public MLP23(int[] topology, IDifferentiableFunction[] functions, double lr, double momentum, int epochs) {
+        this(topology, functions, lr, momentum, 0.0, epochs, SEED);
     }
 
     /**
@@ -112,7 +117,7 @@ public class MLP23
     public void train()
     {
         // 1. Load and prepare the data using DataHandler
-        DataHandler dataManager = new DataHandler(SEED, DataHandler.NormalizationType.MIN_MAX);
+        DataHandler dataManager = new DataHandler(this.seed, DataHandler.NormalizationType.MIN_MAX);
         // 2. Call the core training method with the prepared matrices
         train(dataManager.getTrainInputs(), dataManager.getTrainOutputs(), dataManager.getTestInputs(), dataManager.getTestOutputs());
     }
@@ -129,7 +134,7 @@ public class MLP23
     public double train(Matrix trainInputs, Matrix trainOutputs, Matrix valInputs, Matrix valOutputs)
     {
         // The complex training logic is now encapsulated within the MLP class itself.
-        return this.mlp.train(trainInputs, trainOutputs, valInputs, valOutputs, this.lr, this.epochs, this.momentum);
+        return this.mlp.train(trainInputs, trainOutputs, valInputs, valOutputs, this.lr, this.epochs, this.momentum, this.l2Lambda);
     }
 
     /**
@@ -138,20 +143,21 @@ public class MLP23
     public record TestMetrics(double accuracy, double precision, double recall, double f1Score) {}
 
     /**
-     * Evaluates the trained model against a test dataset and computes performance metrics.
+     * Evaluates the trained model against a test dataset, computes performance metrics, and logs incorrect predictions.
      *
      * @param testInputs The test input data.
      * @param testOutputs The test target labels.
-     * @return A {@link TestMetrics} object containing accuracy, precision, recall and F1-score.
+     * @param failedInputsWriter A writer for the input data of failed predictions. Can be null.
+     * @param failedLabelsWriter A writer for the labels of failed predictions. Can be null.
+     * @return A {@link TestMetrics} object containing accuracy, precision, recall, and F1-score.
      */
-    public TestMetrics test(Matrix testInputs, Matrix testOutputs) {
+    public TestMetrics test(Matrix testInputs, Matrix testOutputs, PrintWriter failedInputsWriter, PrintWriter failedLabelsWriter) {
         int truePositives = 0;
         int falsePositives = 0;
         int falseNegatives = 0;
         int correctPredictions = 0;
 
         for (int i = 0; i < testOutputs.rows(); i++) {
-            // Extrai uma linha de cada vez para a predição
             double[] row = new double[testInputs.cols()];
             for (int j = 0; j < testInputs.cols(); j++) {
                 row[j] = testInputs.get(i, j);
@@ -164,25 +170,40 @@ public class MLP23
 
             if (predictedLabel == actualValue) {
                 correctPredictions++;
+            } else {
+                // Log the failed prediction if writers are provided
+                if (failedInputsWriter != null && failedLabelsWriter != null) {
+                    // Converte o array de double para uma string CSV
+                    String inputAsString = Arrays.stream(row)
+                            .mapToObj(String::valueOf)
+                            .collect(Collectors.joining(","));
+                    failedInputsWriter.println(inputAsString);
+                    failedLabelsWriter.println((int) actualValue);
+                }
             }
 
-            // Calcula TP, FP, FN (considerando '1' como a classe positiva)
-            if (predictedLabel == 1 && actualValue == 1) {
-                truePositives++;
-            } else if (predictedLabel == 1 && actualValue == 0) {
-                falsePositives++;
-            } else if (predictedLabel == 0 && actualValue == 1) {
-                falseNegatives++;
-            }
+            if (predictedLabel == 1 && actualValue == 1) truePositives++;
+            else if (predictedLabel == 1 && actualValue == 0) falsePositives++;
+            else if (predictedLabel == 0 && actualValue == 1) falseNegatives++;
         }
 
         double accuracy = (double) correctPredictions / testOutputs.rows() * 100.0;
-
         double precision = (truePositives + falsePositives > 0) ? (double) truePositives / (truePositives + falsePositives) : 0.0;
         double recall = (truePositives + falseNegatives > 0) ? (double) truePositives / (truePositives + falseNegatives) : 0.0;
         double f1Score = (precision + recall > 0) ? 2 * (precision * recall) / (precision + recall) : 0.0;
 
         return new TestMetrics(accuracy, precision, recall, f1Score);
+    }
+
+    /**
+     * Evaluates the trained model against a test dataset and computes performance metrics.
+     *
+     * @param testInputs The test input data.
+     * @param testOutputs The test target labels.
+     * @return A {@link TestMetrics} object containing accuracy, precision, recall and F1-score.
+     */
+    public TestMetrics test(Matrix testInputs, Matrix testOutputs) {
+        return test(testInputs, testOutputs, null, null);
     }
 
     /**
