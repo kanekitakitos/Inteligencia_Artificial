@@ -178,7 +178,7 @@ public class MLP implements Serializable {
     public double train(Matrix trainInputs, Matrix trainOutputs, Matrix valInputs, Matrix valOutputs, double lr, int epochs, double momentum, double l2Lambda)
     {
         // --- CONFIGURAÇÕES ---
-        int batchSize = 32;// melhorou um pouco
+        int batchSize = 32; // estava em 32
         final int PATIENCE_EPOCHS = 500;
         final int VALIDATION_FREQUENCY = 5;
 
@@ -219,14 +219,14 @@ public class MLP implements Serializable {
 
                     // Imprime o progresso em intervalos regulares para feedback visual
                     if ((epoch - VALIDATION_FREQUENCY) > 0 && (epoch - VALIDATION_FREQUENCY) % 100 == 0) {
-                        System.out.printf("Época: %-5d | LR: %.8f | (MSE): %.6f\n", epoch - VALIDATION_FREQUENCY, currentLr, currentValidationError);
+                        //System.out.printf("Época: %-5d | LR: %.8f | (MSE): %.6f\n", epoch, currentLr, currentValidationError);
                     }
 
                         // Verifica se o modelo melhorou
                         if (currentValidationError < bestValidationError) {
                             bestValidationError = currentValidationError;
-                            bestMlp.set(this.clone()); // Guarda o campeão
-                            epochsSinceLastImprovement = 0; // Reseta o contador
+                            bestMlp.set(this.clone()); // Checkpoint tipo um jogo
+                            epochsSinceLastImprovement = 0;
                         } else {
                             epochsSinceLastImprovement += VALIDATION_FREQUENCY; // Incrementa pelo intervalo
                         }
@@ -235,7 +235,7 @@ public class MLP implements Serializable {
                         if (epochsSinceLastImprovement >= PATIENCE_EPOCHS) {
                             System.out.printf("\nParada antecipada na época %d. Sem melhoria há %d épocas. Melhor erro: %.6f\n", epoch, epochsSinceLastImprovement, bestValidationError);
                             validationFuture.cancel(true); // Cancela a próxima validação
-                            break; // Sai do loop de treinamento
+                            break;
                         }
 
                     } catch (Exception e) {
@@ -275,6 +275,14 @@ public class MLP implements Serializable {
      */
     public Matrix[] getBiases() {
         return cloneMatrices(this.b);
+    }
+
+    /**
+     * Returns the activation functions used in each layer.
+     * @return An array of IDifferentiableFunction.
+     */
+    public IDifferentiableFunction[] getActivations() {
+        return this.act;
     }
 
     /**
@@ -357,10 +365,5 @@ public class MLP implements Serializable {
 
         return clonedMlp;
     }
-
-
-    public void saveModel(String modelPath)
-    {
-        ModelUtils.saveModel(this,modelPath);
-    }
+    
 }

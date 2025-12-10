@@ -62,8 +62,8 @@ class TestMLP23
 
         MLP23 mlp23 = new MLP23();
         mlp23.train();
-        MLP mlpt = mlp23.getMLP();
-        mlpt.saveModel(MODEL_PATH);
+        ModelUtils.saveModel(mlp23.getMLP(), MODEL_PATH+".model");
+
 
         mlp = ModelUtils.loadModel(MODEL_PATH);
 

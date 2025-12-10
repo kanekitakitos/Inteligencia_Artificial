@@ -60,8 +60,8 @@ public class MLP23
     private final MLP mlp;
     private final int seed;
     private final double l2Lambda;
-    public static final int SEED = 12; // 2;4;5 5:00 ;7;8 4:21 ;16 4:17
-
+    public static final int SEED = 8; // 2;4;5 5:00 ;7;8 4:21 ;16 4:17
+    // 17 seed
 
     /**
      * Constructs the MLP trainer with a predefined network topology and activation functions.
@@ -69,8 +69,8 @@ public class MLP23
      */
     public MLP23()
     {
-        // Fornece um valor padrão para l2Lambda (0.0 para desativar a regularização).
-        this(new int[]{400, 4, 1}, new IDifferentiableFunction[]{new TanH(), new Sigmoid()}, 0.001, 0.99, 0.0, 10000, SEED);
+
+        this(new int[]{400, 3, 1}, new IDifferentiableFunction[]{new Sigmoid(), new Sigmoid()}, 0.0015, 0.99,0.000, 10000, SEED);
     }
 
     /**

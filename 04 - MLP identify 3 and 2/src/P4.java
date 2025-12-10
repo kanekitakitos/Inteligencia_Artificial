@@ -1,12 +1,7 @@
-import apps.DataHandler;
 import apps.MLP23;
 import math.Matrix;
 import neural.MLP;
 import neural.ModelUtils;
-import neural.activation.IDifferentiableFunction;
-import neural.activation.Sigmoid;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,7 +24,7 @@ import java.util.Scanner;
  */
 public class P4
 {
-    public static String path = "src/models/mlp23_99.model";
+    public static String path = "src/models/mlp23";
 
     /**
      * Loads a pre-trained model, reads all image data from standard input,
@@ -54,6 +49,8 @@ public class P4
                 double[] inputValues = Arrays.stream(line.split(","))
                         .map(String::trim)
                         .mapToDouble(Double::parseDouble)
+                        // IMPORTANT: Normalize the input data in the same way as the training data.
+                        .map(pixel -> pixel / 255.0) // Example: Normalizing from [0, 255] to [0, 1]
                         .toArray();
                 allInputs.add(inputValues);
             }
@@ -89,6 +86,10 @@ public class P4
         MLP23 mlp23 = new MLP23();
         mlp23.train();
         MLP mlp = mlp23.getMLP();
-        mlp.saveModel(modelPath);
+        ModelUtils.saveModel(mlp, modelPath+".model");
+        ModelUtils.saveModelToJson(mlp, modelPath+".json");
+
+
+
     }
 }

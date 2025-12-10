@@ -90,42 +90,38 @@ public class HyperparameterTuner {
      */
     private static final String RESULTS_FILE = "src/data/tuning_results.log";
 
+    private final boolean findSeed = true;
     private final int SEED = MLP23.SEED;
     private final int epochs = 10000;
 
     private final double[] learningRates = {
-            0.0001,  // Ligeiramente abaixo
-            0.001,
-            0.01,  // O teu ponto de referência
-            0.1,
-            // Limite superior agressivo
+            0.0008,
+            0.0009,
+            0.0010, // Melhor resultado (99.00%) foi com 0.0010
+            0.0011, // Ligeira variação para cima
     };
 
-    // Variações subtis à volta de 0.65
     private final double[] momentums = {
-            0.6,
-            0.70,   // O teu ponto de referência
-            0.8,
-            0.9
+            0.98,
+            0.99 // Dominante nos resultados > 98%
     };
 
     private final int[][] topologies = {
-            //{400, 2, 1},
-            {400, 1, 1},
+            {400, 2, 1}, // Atingiu 99.00%
+            {400, 3, 1}, // Atingiu 98.50%
+            {400, 4, 1}, // Atingiu 98.88%
     };
-    private final IDifferentiableFunction[][] activationFunctions =
-            {
+
+    private final IDifferentiableFunction[][] activationFunctions = {
+
             {new Sigmoid(), new Sigmoid()},
-            {new TanH(), new Sigmoid()},
+            {new TanH(), new Sigmoid()}
     };
 
-    // Novo: Parâmetros de regularização L2 (lambda)
     private final double[] l2Lambdas = {
-            //0.00011, // Um valor pequeno para começar
             0.0,
-            // Sem regularização, para comparação
+            //0.0001, // Vale a pena reintroduzir um L2 minúsculo para evitar overfitting se usarmos 5 neurónios
     };
-
 
     /**
          * A simple data class to store the results of a single training trial.
@@ -471,7 +467,7 @@ public class HyperparameterTuner {
         }
     }
 
-    private final boolean findSeed = true;
+
     /**
      * Entry point to run the optimizer.
      */
@@ -479,8 +475,9 @@ public class HyperparameterTuner {
         HyperparameterTuner tuner = new HyperparameterTuner();
         if(tuner.findSeed)
         {
-            int[] seedsToTest = { 8,1,2,3,4,5,6,7,9,10,11,12,13,14,15,16,17,18,19,20  }; // Exemplo de seeds
-            tuner.findBestSeedForConfig(new int[]{400, 4, 1}, new IDifferentiableFunction[]{new TanH(), new Sigmoid()}, 0.001, 0.99, 0.0, seedsToTest);
+            int[] seedsToTest = { 8,1,2,3,4,5,6,7,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25  }; // Exemplo de seeds
+            tuner.findBestSeedForConfig(new int[]{400, 2, 1}, new IDifferentiableFunction[]{new Sigmoid(), new Sigmoid()}, 0.0010, 0.99, 0.0, seedsToTest);
+
             // 0.0005 0.99 topologia 4 sigmoid sigmoid
 
         }
