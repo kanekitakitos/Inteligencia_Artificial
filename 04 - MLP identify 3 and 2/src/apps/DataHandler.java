@@ -64,13 +64,25 @@ public class DataHandler {
 
     // --- Default File Paths ---
     private static final String[] DEFAULT_INPUT_PATHS = {
+//            "src/data/train/dataset1.csv",
+//            "src/data/train/dataset2.csv",
+//            "src/data/train/dataset3.csv",
+//            "src/data/train/dataset4.csv",
             "src/data/moonshak/datasetBig.csv",
+            "src/data/train/final.csv",
+
             //"src/data/train/test_apenas_novos2.csv",
 
     };
     private static final String[] DEFAULT_OUTPUT_PATHS = {
-            "src/data/moonshak/labelsBig.csv", // Reused for all input files
-            //"src/data/train/testL.csv",
+//            "src/data/train/labelsAll.csv", // Reused for all input files
+//            "src/data/train/labels2.csv",
+//            "src/data/train/labels3.csv",
+//            "src/data/train/labels4.csv",
+            "src/data/moonshak/labelsBig.csv",
+            "src/data/train/finalL.csv",
+
+
     };
 
     //private static final String DEFAULT_TEST_INPUT_PATH = "src/data/minist/test_pixels.csv";
@@ -80,8 +92,8 @@ public class DataHandler {
     private static final String DEFAULT_TEST_LABELS_PATH = "src/data/testData/labelsTest.csv";
 
     // --- Caminhos para o conjunto de dados de teste extra (para validação rigorosa) ---
-    private static final String EXTRA_TEST_INPUT_PATH = "src/data/minist/test_pixels.csv";
-    private static final String EXTRA_TEST_LABELS_PATH = "src/data/minist/test_labels.csv";
+    private static final String EXTRA_TEST_INPUT_PATH = "src/data/minist/final.csv";
+    private static final String EXTRA_TEST_LABELS_PATH = "src/data/minist/finalL.csv";
 
     public enum NormalizationType {
         MIN_MAX, // Normaliza para o intervalo [0, 1]

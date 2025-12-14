@@ -42,8 +42,10 @@ public class ModelUtils {
      * @param filePath The path to the serialized model file.
      * @return A new {@link MLP} instance with the loaded state, or {@code null} if loading fails.
      */
-    public static MLP loadModel(String filePath) {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
+    public static MLP loadModel(String filePath)
+    {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath)))
+        {
             return (MLP) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("ERRO: Falha ao carregar o modelo de " + filePath);
@@ -60,9 +62,12 @@ public class ModelUtils {
      */
     public static void saveModel(MLP model, String filePath) {
         new File(filePath).getParentFile().mkdirs();
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath)))
+        {
             oos.writeObject(model);
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             System.err.println("ERRO: Falha ao guardar o modelo em " + filePath);
             e.printStackTrace();
         }
@@ -77,7 +82,8 @@ public class ModelUtils {
      * @param model    The MLP model to save.
      * @param filePath The destination path for the .json file.
      */
-    public static void saveModelToJson(MLP model, String filePath) {
+    public static void saveModelToJson(MLP model, String filePath)
+    {
         StringBuilder json = new StringBuilder();
         json.append("{\n");
 
@@ -104,7 +110,8 @@ public class ModelUtils {
 
         // 3. Weights
         json.append("  \"weights\": [");
-        for (int i = 0; i < w.length; i++) {
+        for (int i = 0; i < w.length; i++)
+        {
             json.append(matrixToJson(w[i]));
             if (i < w.length - 1) json.append(", ");
         }
@@ -133,7 +140,8 @@ public class ModelUtils {
      * @param filePath The path to the .json file.
      * @return A new instance of MLP populated with the loaded data.
      */
-    public static MLP loadModelFromJson(String filePath) {
+    public static MLP loadModelFromJson(String filePath)
+    {
         try {
             String content = new String(Files.readAllBytes(Paths.get(filePath)));
 

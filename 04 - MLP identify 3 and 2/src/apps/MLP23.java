@@ -69,8 +69,7 @@ public class MLP23
      */
     public MLP23()
     {
-
-        this(new int[]{400, 2, 1}, new IDifferentiableFunction[]{new Sigmoid(), new Sigmoid()}, 0.0010, 0.99,0.00, 10000, SEED);
+        this(new int[]{400, 3, 1}, new IDifferentiableFunction[]{new Sigmoid(), new Sigmoid()}, 0.002, 0.99, 0.00, 10000, SEED);
     }
 
     /**

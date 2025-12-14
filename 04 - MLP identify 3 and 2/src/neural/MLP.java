@@ -194,7 +194,7 @@ public class MLP implements Serializable {
         // --- AGENDADOR DE TAXA DE APRENDIZAGEM (LEARNING RATE SCHEDULER) ---
         final double initialLr = lr; // Guarda a taxa de aprendizagem inicial
         // O decayRate controla a velocidade com que a taxa de aprendizagem diminui.
-        final double decayRate = initialLr / epochs;
+        final double decayRate = 3.0 / epochs;
 
         for (int epoch = 1; epoch <= epochs; epoch++) {
             final double currentLr = initialLr / (1 + decayRate * epoch);
@@ -219,7 +219,7 @@ public class MLP implements Serializable {
 
                     // Imprime o progresso em intervalos regulares para feedback visual
                     if ((epoch - VALIDATION_FREQUENCY) > 0 && (epoch - VALIDATION_FREQUENCY) % 100 == 0) {
-                        System.out.printf("Época: %-5d | LR: %.8f | (MSE): %.6f\n", epoch, currentLr, currentValidationError);
+                        //System.out.printf("Época: %-5d | LR: %.8f | (MSE): %.6f\n", epoch, currentLr, currentValidationError);
                     }
 
                         // Verifica se o modelo melhorou

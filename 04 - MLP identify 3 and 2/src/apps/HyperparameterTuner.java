@@ -88,37 +88,35 @@ public class HyperparameterTuner {
      */
     private static final String RESULTS_FILE = "src/data/tuning_results.log";
 
-    private final boolean findSeed = true;
+    private final boolean findSeed = false;
     private final int SEED = MLP23.SEED;
     private final int epochs = 10000;
 
     private final double[] learningRates = {
-            0.0008,
-            0.0009,
-            0.0010, // Melhor resultado (99.00%) foi com 0.0010
-            0.0011, // Ligeira variação para cima
+            0.0019,
+            0.0020,
+            0.0021
     };
 
     private final double[] momentums = {
-            0.98,
-            0.99 // Dominante nos resultados > 98%
+            0.985,
+            0.99,
+            0.995
     };
 
     private final int[][] topologies = {
-            {400, 2, 1}, // Atingiu 99.00%
-            {400, 3, 1}, // Atingiu 98.50%
-            {400, 4, 1}, // Atingiu 98.88%
+            {400, 3, 1},
+            {400, 4, 1},
     };
 
     private final IDifferentiableFunction[][] activationFunctions = {
-
             {new Sigmoid(), new Sigmoid()},
-            {new TanH(), new Sigmoid()}
+            //{new TanH(), new Sigmoid()},
     };
 
     private final double[] l2Lambdas = {
             0.0,
-            //0.0001, // Vale a pena reintroduzir um L2 minúsculo para evitar overfitting se usarmos 5 neurónios
+            0.00001,
     };
 
     /**
@@ -212,20 +210,20 @@ public class HyperparameterTuner {
             {
                 try {
                     // Wait for the next completed task, with a generous timeout.
-                    Future<TuningResult> future = completionService.poll(10, TimeUnit.MINUTES);
+                    Future<TuningResult> future = completionService.poll(40, TimeUnit.MINUTES);
                     if (future == null) {
-                        System.err.print("\n[WARNING] A training trial timed out after 10 minutes and was cancelled. Skipping to the next one.\n");
+                        System.err.print("\n[WARNING] A training trial timed out after 40 minutes and was cancelled. Skipping to the next one.\n");
                         continue; // Move to the next result
                     }
                     TuningResult trialResult = future.get();
                     results.add(trialResult);
 
                     // Guarda o resultado imediatamente, mas apenas se a acurácia for superior a 90%.
-                    if (trialResult.accuracy > 96) { // Limiar de exemplo
+                    if (trialResult.accuracy >= 95.0) { // Subimos a fasquia pois já temos 98.75%
                         saveResult(trialResult); // Salva a linha completa no log
                         System.out.printf(">> Completed trial %d/%d. Result saved: Accuracy: %.2f%%, F1: %.4f\n", (i + 1), tasks.size(), trialResult.accuracy, trialResult.f1Score);
                     } else {
-                        System.out.printf(">> Completed trial %d/%d. Accuracy < 95%% (%.2f%%). Result ignored.\n", (i + 1), tasks.size(), trialResult.accuracy);
+                        System.out.printf(">> Completed trial %d/%d. Accuracy < 97.0%% (%.2f%%). Result ignored.\n", (i + 1), tasks.size(), trialResult.accuracy);
                     }
 
                 } catch (CancellationException e) {
@@ -481,11 +479,12 @@ public class HyperparameterTuner {
         HyperparameterTuner tuner = new HyperparameterTuner();
         if(tuner.findSeed)
         {
-            int[] seedsToTest = { 8,1,2,3,4,5,6,7,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25  }; // Exemplo de seeds
-            tuner.findBestSeedForConfig(new int[]{400, 2, 1}, new IDifferentiableFunction[]{new Sigmoid(), new Sigmoid()}, 0.0010, 0.99, 0.0, seedsToTest);
-
-            // 0.0005 0.99 topologia 4 sigmoid sigmoid
-
+            // Testa 100 seeds diferentes na configuração vencedora para encontrar a "sortuda"
+            int[] seedsToTest = new int[100];
+            for(int i=0; i<100; i++) seedsToTest[i] = i + 1;
+            
+            // Configuração Otimizada: [400, 3, 1], LR 0.0020, Momentum 0.99
+            tuner.findBestSeedForConfig(new int[]{400, 3, 1}, new IDifferentiableFunction[]{new Sigmoid(), new Sigmoid()}, 0.0020, 0.99, 0.0, seedsToTest);
         }
         else
         // Cenário 1: Executar a busca em grade completa
