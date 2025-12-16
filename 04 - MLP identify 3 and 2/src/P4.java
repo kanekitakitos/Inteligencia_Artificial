@@ -1,3 +1,4 @@
+import apps.DataHandler;
 import apps.MLP23;
 import math.Matrix;
 import neural.MLP;
@@ -24,7 +25,7 @@ import java.util.Scanner;
  */
 public class P4
 {
-    public static String path = "src/models/mlp23.json";
+    public static String path = "src/models/92_350.json";
 
     /**
      * Loads a pre-trained model, reads all image data from standard input,
@@ -34,6 +35,7 @@ public class P4
      */
     public static void main(String[] args)
     {
+
         MLP mlp = ModelUtils.loadModelFromJson(path);
 
         // 2. Read all 'm' samples from standard input.

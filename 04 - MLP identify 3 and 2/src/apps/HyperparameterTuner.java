@@ -2,6 +2,8 @@ package apps;
 import math.Matrix;
 import neural.activation.IDifferentiableFunction;
 import neural.activation.*;
+import neural.MLP;
+import neural.ModelUtils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -90,33 +92,34 @@ public class HyperparameterTuner {
 
 
     private final int SEED = MLP23.SEED;
-    private final int epochs = 10000;
+    private final int epochs = 15000;
 
     private final double[] learningRates = {
-            0.0019,
-            0.0020,
-            0.0021
+            0.00001,
+            0.0015,
+            0.0009,
+            0.0005
     };
 
     private final double[] momentums = {
-            0.985,
+            0.6,
+            0.5,
             0.99,
-            0.995
     };
 
     private final int[][] topologies = {
-            {400, 3, 1},
-            {400, 4, 1},
+            {400, 6, 1},
     };
 
     private final IDifferentiableFunction[][] activationFunctions = {
             {new Sigmoid(), new Sigmoid()},
-            //{new TanH(), new Sigmoid()},
+            {new TanH() ,new Sigmoid()},
+
     };
 
     private final double[] l2Lambdas = {
             0.0,
-            0.00001,
+            //0.00001,
     };
 
 
@@ -141,6 +144,9 @@ public class HyperparameterTuner {
             // Cenário 1: Executar a busca em grade completa
             tuner.runGridSearch();
 
+        // Exemplo de uso do treino contínuo (descomentar para usar):
+         //tuner.continueTraining("src/models/test.json", 2000, 0.00002, 0.99, 0.00005);
+
     }
 
     /**
@@ -157,7 +163,7 @@ public class HyperparameterTuner {
 
             @Override
             public String toString() {
-                String base = String.format("Seed: %d, Parameters: [%s] -> Accuracy: %.2f%%, Precision: %.4f, Recall: %.4f, F1-Score: %.4f",
+                String base = String.format("Seed: %d, Parameters: [%s] -> Accuracy: %.3f%%, Precision: %.4f, Recall: %.4f, F1-Score: %.4f",
                         seed,
                         paramsDescription, accuracy, precision, recall, f1Score);
                 // Adiciona a acurácia extra apenas se tiver sido calculada (não é 0.0)
@@ -196,7 +202,7 @@ public class HyperparameterTuner {
                     for (double momentum : momentums) {
                         for (double l2Lambda : l2Lambdas) { // Novo loop para L2
                             String paramsDescription = String.format(
-                                    "Topology: %s, Functions: %s, LR: %.4f, Momentum: %.2f, L2: %.4f",
+                                    "Topology: %s, Functions: %s, LR: %.8f, Momentum: %.2f, L2: %.4f",
                                     Arrays.toString(topology), getFunctionNames(functions), lr, momentum, l2Lambda
                             );
 
@@ -350,7 +356,7 @@ public class HyperparameterTuner {
      */
     public void findBestSeedForConfig(int[] topology, IDifferentiableFunction[] functions, double lr, double momentum, double l2Lambda, int[] seedsToTest) {
         String paramsDescription = String.format(
-                "Topology: %s, Functions: %s, LR: %.4f, Momentum: %.2f, L2: %.4f",
+                "Topology: %s, Functions: %s, LR: %.8f, Momentum: %.2f, L2: %.4f",
                 Arrays.toString(topology), getFunctionNames(functions), lr, momentum, l2Lambda
         );
 
@@ -495,4 +501,52 @@ public class HyperparameterTuner {
         }
     }
 
+    /**
+     * Carrega um modelo JSON existente e continua o treino (Fine-tuning).
+     * Apenas salva se a acurácia melhorar.
+     *
+     * @param modelPath Caminho para o ficheiro .json do modelo.
+     * @param extraEpochs Quantidade de épocas adicionais.
+     * @param learningRate Taxa de aprendizagem.
+     * @param momentum Momentum.
+     * @param l2Lambda Regularização L2.
+     */
+    public void continueTraining(String modelPath, int extraEpochs, double learningRate, double momentum, double l2Lambda) {
+        System.out.println(">>> A carregar modelo para treino contínuo: " + modelPath);
+        MLP mlp = ModelUtils.loadModelFromJson(modelPath);
+
+        // Usa a mesma seed e normalização para consistência dos dados
+        DataHandler dh = new DataHandler(SEED, DataHandler.NormalizationType.MIN_MAX);
+
+        // 1. Avaliar precisão inicial
+        double initialAccuracy = calculateAccuracy(mlp, dh.getTestInputs(), dh.getTestOutputs());
+        System.out.printf(">>> Acurácia inicial: %.2f%%\n", initialAccuracy);
+
+        System.out.println(">>> A iniciar treino extra de " + extraEpochs + " épocas...");
+        mlp.train(dh.getTrainInputs(), dh.getTrainOutputs(), dh.getTestInputs(), dh.getTestOutputs(), learningRate, extraEpochs, momentum, l2Lambda);
+
+        // 2. Avaliar precisão final
+        double finalAccuracy = calculateAccuracy(mlp, dh.getTestInputs(), dh.getTestOutputs());
+        System.out.printf(">>> Acurácia final: %.2f%%\n", finalAccuracy);
+
+        if (finalAccuracy > initialAccuracy) {
+            ModelUtils.saveModelToJson(mlp, modelPath);
+            System.out.println(">>> Modelo MELHORADO salvo com sucesso em: " + modelPath);
+        } else {
+            System.out.println(">>> O modelo não melhorou a acurácia (Inicial: " + initialAccuracy + "% vs Final: " + finalAccuracy + "%). Alterações descartadas.");
+        }
+    }
+
+    private double calculateAccuracy(MLP mlp, Matrix inputs, Matrix outputs) {
+        Matrix predictions = mlp.predict(inputs);
+        int correct = 0;
+        for (int i = 0; i < predictions.rows(); i++) {
+            long predictedLabel = Math.round(predictions.get(i, 0));
+            double actualValue = outputs.get(i, 0);
+            if (predictedLabel == (long) actualValue) {
+                correct++;
+            }
+        }
+        return (double) correct / inputs.rows() * 100.0;
+    }
 }
